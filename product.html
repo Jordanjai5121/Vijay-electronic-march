@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Product Details – Vijay Electronics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800;900&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#0052CC;--primary-d:#003d99;--primary-l:#1a6fff;--primary-xl:#e8f0fe;
+  --accent:#FF4500;--accent-l:#ff6a33;--accent-xl:#fff3ef;
+  --gold:#f59e0b;--gold-l:#fbbf24;
+  --green:#059669;--green-l:#10b981;
+  --txt:#111827;--txt2:#374151;--txt3:#6b7280;--txt4:#9ca3af;
+  --bg:#f8fafc;--bg2:#f1f5f9;--bg3:#ffffff;
+  --bdr:#e2e8f0;
+  --sh:0 4px 16px rgba(0,0,0,.08);
+  --sh-lg:0 20px 60px rgba(0,0,0,.12);
+  --rad:12px;--rad-lg:20px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden}
+img{max-width:100%;display:block}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:inherit}
+
+/* ── TOPBAR ── */
+.topbar{background:linear-gradient(90deg,#0a2463,#0052CC,#0a2463);color:rgba(255,255,255,.9);font-size:11.5px;font-weight:600;padding:6px 20px;display:flex;align-items:center;justify-content:space-between}
+.topbar a{color:rgba(255,255,255,.9)}
+
+/* ── NAV ── */
+nav{background:rgba(255,255,255,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);box-shadow:0 2px 20px rgba(0,82,204,.06);position:sticky;top:0;z-index:100}
+.nav-inner{max-width:1200px;margin:auto;display:flex;align-items:center;height:62px;padding:0 20px;gap:12px}
+.back-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;color:var(--txt2);transition:all .2s;cursor:pointer;background:#fff}
+.back-btn:hover{border-color:var(--primary);color:var(--primary)}
+.nav-logo{font-family:'Syne',sans-serif;font-size:17px;font-weight:900;background:linear-gradient(135deg,#0a2463,var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-left:8px}
+.nav-logo em{background:linear-gradient(135deg,var(--accent),var(--accent-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-style:normal}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.cart-nav-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--primary-xl);color:var(--primary);border:none;border-radius:8px;font-size:13px;font-weight:700;position:relative}
+.cart-nav-count{position:absolute;top:-4px;right:-4px;background:var(--accent);color:#fff;font-size:9px;font-weight:800;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+
+/* ── BREADCRUMB ── */
+.breadcrumb{max-width:1200px;margin:16px auto;padding:0 20px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt3)}
+.breadcrumb span{color:var(--txt4)}
+.breadcrumb a{color:var(--primary);font-weight:600;cursor:pointer}
+
+/* ── MAIN GRID ── */
+.main-wrap{max-width:1200px;margin:0 auto;padding:0 20px 60px}
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:40px}
+
+/* ── IMAGE PANEL ── */
+.img-panel{position:sticky;top:80px;height:fit-content}
+.main-img-wrap{background:#fff;border-radius:var(--rad-lg);border:1px solid var(--bdr);overflow:hidden;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:100px;box-shadow:var(--sh);position:relative}
+.main-img-wrap img{width:100%;height:100%;object-fit:contain;padding:20px}
+.prod-emoji-big{font-size:100px;line-height:1}
+.badge-panel{position:absolute;top:16px;left:16px;display:flex;flex-direction:column;gap:6px}
+.badge-hot{background:linear-gradient(135deg,var(--accent),var(--accent-l));color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px}
+.badge-offer{background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#7c2d12;font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px}
+.thumbnail-strip{display:flex;gap:8px;margin-top:12px}
+.thumb{width:64px;height:64px;border-radius:8px;border:2px solid var(--bdr);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:26px;background:#fff;transition:all .2s}
+.thumb:hover,.thumb.active{border-color:var(--primary)}
+
+/* ── INFO PANEL ── */
+.info-panel{}
+.prod-cat-tag{display:inline-flex;align-items:center;gap:5px;background:var(--primary-xl);color:var(--primary);font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;margin-bottom:12px}
+.prod-name{font-family:'Syne',sans-serif;font-size:26px;font-weight:900;line-height:1.2;color:var(--txt);margin-bottom:8px}
+.prod-brand-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.prod-brand{font-size:14px;font-weight:700;color:var(--txt2)}
+.prod-id-chip{background:var(--bg2);border:1px solid var(--bdr);border-radius:6px;padding:2px 8px;font-size:11px;color:var(--txt3);font-weight:600}
+.stock-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700}
+.stock-badge.in{color:var(--green)}
+.stock-badge.out{color:var(--accent)}
+.stock-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── PRICE ── */
+.price-box{background:linear-gradient(135deg,#f0fdf4,#d1fae5);border:1.5px solid #bbf7d0;border-radius:var(--rad);padding:16px 20px;margin-bottom:20px}
+.price-label{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.price-main{font-family:'Syne',sans-serif;font-size:32px;font-weight:900;color:var(--green)}
+.price-note{font-size:11px;color:var(--txt3);margin-top:4px}
+.offer-pill{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,var(--accent),var(--accent-l));color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;margin-top:8px}
+
+/* ── SPECS ── */
+.specs-box{background:#fff;border:1px solid var(--bdr);border-radius:var(--rad);margin-bottom:20px;overflow:hidden}
+.specs-title{font-size:13px;font-weight:800;color:var(--txt);padding:12px 16px;border-bottom:1px solid var(--bdr);background:var(--bg2);display:flex;align-items:center;gap:6px}
+.spec-row{display:flex;border-bottom:1px solid var(--bdr)}
+.spec-row:last-child{border-bottom:none}
+.spec-key{width:140px;flex-shrink:0;padding:10px 16px;font-size:12px;font-weight:600;color:var(--txt3);background:var(--bg2)}
+.spec-val{flex:1;padding:10px 16px;font-size:13px;color:var(--txt);font-weight:500}
+
+/* ── FEATURES ── */
+.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.feature-item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt2)}
+.feature-item i{color:var(--green);font-size:13px;flex-shrink:0}
+
+/* ── ACTIONS ── */
+.action-row{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.btn-cart{display:flex;align-items:center;justify-content:center;gap:8px;padding:15px;background:linear-gradient(135deg,var(--primary),var(--primary-l));color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:inherit;transition:all .25s;box-shadow:0 6px 20px rgba(0,82,204,.3)}
+.btn-cart:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,82,204,.4)}
+.btn-cart.added{background:linear-gradient(135deg,var(--green),var(--green-l))}
+.btn-wa{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:linear-gradient(135deg,#25d366,#128C7E);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:inherit;transition:all .25s}
+.btn-wa:hover{transform:translateY(-1px);opacity:.92}
+.btn-call{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:#fff;border:2px solid var(--bdr);color:var(--txt);border-radius:12px;font-size:14px;font-weight:800;font-family:inherit;transition:all .25s}
+.btn-call:hover{border-color:var(--primary);color:var(--primary)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ── OFFER CARDS ── */
+.offer-strip{background:linear-gradient(135deg,#fef3c7,#fffbeb);border:1.5px solid #fde68a;border-radius:var(--rad);padding:14px 16px;margin-bottom:20px}
+.offer-strip-title{font-size:12px;font-weight:800;color:#92400e;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.offer-list-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--txt2);margin-bottom:6px}
+.offer-list-item i{color:var(--gold);flex-shrink:0;margin-top:1px}
+
+/* ── TABS ── */
+.tabs-wrap{background:#fff;border-radius:var(--rad-lg);border:1px solid var(--bdr);box-shadow:var(--sh);margin-bottom:32px;overflow:hidden}
+.tabs-nav{display:flex;border-bottom:1px solid var(--bdr)}
+.tab-btn{flex:1;padding:14px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--txt3);border-bottom:2px solid transparent;transition:all .2s;font-family:inherit}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);background:var(--primary-xl)}
+.tab-content{padding:24px;display:none}
+.tab-content.active{display:block}
+
+/* ── DESCRIPTION ── */
+.desc-text{font-size:14px;line-height:1.8;color:var(--txt2)}
+.desc-text h3{font-size:15px;font-weight:800;color:var(--txt);margin:16px 0 8px}
+.desc-text ul{padding-left:18px;margin-bottom:12px}
+.desc-text ul li{margin-bottom:5px}
+
+/* ── RELATED ── */
+.section-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:900;color:var(--txt);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.related-card{background:#fff;border-radius:var(--rad);border:1px solid var(--bdr);overflow:hidden;cursor:pointer;transition:all .25s;box-shadow:var(--sh)}
+.related-card:hover{transform:translateY(-4px);box-shadow:var(--sh-lg);border-color:var(--primary)}
+.rc-img{height:120px;display:flex;align-items:center;justify-content:center;background:var(--bg2);font-size:46px}
+.rc-img img{width:100%;height:100%;object-fit:contain;padding:10px}
+.rc-body{padding:12px}
+.rc-cat{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;margin-bottom:4px}
+.rc-name{font-size:13px;font-weight:700;color:var(--txt);line-height:1.3;margin-bottom:3px}
+.rc-brand{font-size:11px;color:var(--txt3)}
+.rc-offer{font-size:10px;font-weight:800;color:var(--accent);margin-top:4px}
+
+/* ── CART PANEL ── */
+.cart-panel{position:fixed;top:0;right:0;height:100%;width:360px;background:#fff;border-left:1px solid var(--bdr);box-shadow:var(--sh-lg);z-index:500;transform:translateX(100%);transition:transform .3s;display:flex;flex-direction:column}
+.cart-panel.open{transform:translateX(0)}
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:499;opacity:0;visibility:hidden;transition:all .3s}
+.cart-overlay.open{opacity:1;visibility:visible}
+.cart-head{padding:20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.cart-head-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:900}
+.cart-close{background:none;border:none;font-size:20px;color:var(--txt3);cursor:pointer}
+.cart-items{flex:1;overflow-y:auto;padding:16px}
+.cart-item{display:flex;gap:12px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);margin-bottom:10px;position:relative}
+.ci-emoji{width:52px;height:52px;border-radius:8px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.ci-info{flex:1}
+.ci-name{font-size:13px;font-weight:700;color:var(--txt)}
+.ci-brand{font-size:11px;color:var(--txt3);margin-top:1px}
+.ci-qty{display:flex;align-items:center;gap:8px;margin-top:6px}
+.qty-btn{width:24px;height:24px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.qty-num{font-size:13px;font-weight:800;min-width:20px;text-align:center}
+.ci-del{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--txt4);font-size:14px;cursor:pointer}
+.ci-del:hover{color:var(--accent)}
+.cart-footer{padding:16px;border-top:1px solid var(--bdr)}
+.cart-total{display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin-bottom:14px}
+.cart-empty{text-align:center;padding:40px 20px;color:var(--txt3)}
+.cart-empty i{font-size:48px;margin-bottom:12px;color:var(--txt4)}
+.btn-checkout{width:100%;padding:14px;background:linear-gradient(135deg,#25d366,#128C7E);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.btn-checkout:hover{opacity:.9}
+
+/* ── TOAST ── */
+.toast-container{position:fixed;top:80px;right:24px;z-index:600;display:flex;flex-direction:column;gap:8px}
+.toast{background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:12px 16px;font-size:13px;font-weight:600;box-shadow:var(--sh-lg);display:flex;align-items:center;gap:8px;transform:translateX(120%);transition:transform .3s;min-width:220px}
+.toast.show{transform:translateX(0)}
+
+@media(max-width:768px){
+  .product-grid{grid-template-columns:1fr}
+  .img-panel{position:static}
+  .btn-row{grid-template-columns:1fr}
+  .features-grid{grid-template-columns:1fr}
+  .related-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .cart-panel{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div>📍 Trichy: 70109 46746 | Madurai: 90258 90535</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="https://wa.me/917010946746" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <button class="back-btn" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+    <div class="nav-logo">Vijay <em>Electronics</em></div>
+    <div class="nav-right">
+      <button class="cart-nav-btn" onclick="openCart()">
+        <i class="fas fa-shopping-cart"></i> Cart
+        <span class="cart-nav-count" id="cart-nav-count">0</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <a onclick="window.history.back()">Home</a>
+  <span>›</span>
+  <a id="bc-cat" onclick="window.history.back()">Category</a>
+  <span>›</span>
+  <span id="bc-name" style="color:var(--txt);font-weight:600">Product</span>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div class="product-grid">
+
+    <!-- LEFT: IMAGE -->
+    <div class="img-panel">
+      <div class="main-img-wrap" id="main-img-wrap">
+        <span class="prod-emoji-big" id="prod-emoji">📦</span>
+      </div>
+      <div class="thumbnail-strip" id="thumb-strip"></div>
+    </div>
+
+    <!-- RIGHT: INFO -->
+    <div class="info-panel">
+      <div class="prod-cat-tag"><i class="fas fa-tag"></i> <span id="prod-cat">Category</span></div>
+      <h1 class="prod-name" id="prod-name">Loading...</h1>
+      <div class="prod-brand-row">
+        <span class="prod-brand"><i class="fas fa-building" style="color:var(--txt3);font-size:12px;margin-right:4px"></i> <span id="prod-brand">Brand</span></span>
+        <span class="prod-id-chip">ID: <span id="prod-id">—</span></span>
+        <span class="stock-badge in" id="stock-badge"><span class="stock-dot" style="background:var(--green)"></span> In Stock</span>
+      </div>
+
+      <!-- PRICE -->
+      <div class="price-box" id="price-box">
+        <div class="price-label">Best Price</div>
+        <div class="price-main" id="prod-price-display">Contact for Price</div>
+        <div class="price-note">📞 Call us for latest price & special offers</div>
+        <div id="offer-pill-wrap"></div>
+      </div>
+
+      <!-- FEATURES -->
+      <div class="features-grid">
+        <div class="feature-item"><i class="fas fa-check-circle"></i> 100% Genuine Product</div>
+        <div class="feature-item"><i class="fas fa-shield-alt"></i> Manufacturer Warranty</div>
+        <div class="feature-item"><i class="fas fa-truck"></i> Delivery Available</div>
+        <div class="feature-item"><i class="fas fa-headset"></i> Expert Support</div>
+        <div class="feature-item"><i class="fas fa-star"></i> Best Price Guarantee</div>
+        <div class="feature-item"><i class="fas fa-undo"></i> Easy Returns</div>
+      </div>
+
+      <!-- OFFERS -->
+      <div class="offer-strip" id="offer-strip">
+        <div class="offer-strip-title">🎁 Available Offers</div>
+        <div id="offer-list-items">
+          <div class="offer-list-item"><i class="fas fa-tag"></i> உடனடி WhatsApp order-க்கு special price!</div>
+          <div class="offer-list-item"><i class="fas fa-credit-card"></i> EMI available – 0% interest</div>
+          <div class="offer-list-item"><i class="fas fa-store"></i> நேரில் வந்தால் extra discount!</div>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="action-row">
+        <button class="btn-cart" id="btn-cart" onclick="toggleCart()">
+          <i class="fas fa-cart-plus"></i> Add to Cart
+        </button>
+        <div class="btn-row">
+          <button class="btn-wa" onclick="enquireWA()">
+            <i class="fab fa-whatsapp"></i> WhatsApp Order
+          </button>
+          <a class="btn-call" href="tel:7010946746">
+            <i class="fas fa-phone"></i> Call Now
+          </a>
+        </div>
+      </div>
+
+      <!-- SPECS -->
+      <div class="specs-box">
+        <div class="specs-title"><i class="fas fa-list-ul"></i> Specifications</div>
+        <div id="specs-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-wrap">
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('desc',this)">📋 Description</button>
+      <button class="tab-btn" onclick="switchTab('delivery',this)">🚚 Delivery & Returns</button>
+      <button class="tab-btn" onclick="switchTab('warranty',this)">🛡️ Warranty</button>
+      <button class="tab-btn" onclick="switchTab('emi',this)">💳 EMI</button>
+    </div>
+    <div class="tab-content active" id="tab-desc">
+      <div class="desc-text" id="desc-text">
+        <p>Loading product details...</p>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-delivery">
+      <div class="desc-text">
+        <h3>🚚 Delivery Information</h3>
+        <ul>
+          <li>Trichy மற்றும் Madurai-ல் Home Delivery available</li>
+          <li>Order confirm ஆன 24–48 மணி நேரத்தில் delivery</li>
+          <li>Heavy products-க்கு special delivery arrangement</li>
+          <li>நேரில் வந்து கடையிலிருந்தும் எடுத்துக்கொள்ளலாம்</li>
+        </ul>
+        <h3>↩️ Returns & Exchange</h3>
+        <ul>
+          <li>Defective products 7 நாட்களில் exchange செய்யலாம்</li>
+          <li>Original packing மற்றும் bill தேவை</li>
+          <li>Return-க்கு முன் நாங்கள் தொடர்பு கொள்ளவும்: 70109 46746</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-warranty">
+      <div class="desc-text">
+        <h3>🛡️ Warranty Details</h3>
+        <ul>
+          <li>எல்லா products-க்கும் Manufacturer Warranty உண்டு</li>
+          <li>TV: 1–3 ஆண்டு warranty</li>
+          <li>Speaker / SoundBar: 1 ஆண்டு warranty</li>
+          <li>Amplifier: 6 மாதம் – 1 ஆண்டு warranty</li>
+          <li>Car Audio: 6 மாதம் warranty</li>
+        </ul>
+        <h3>⚠️ Warranty Conditions</h3>
+        <ul>
+          <li>Bill / invoice கட்டாயம் தேவை</li>
+          <li>Physical damage warranty-ல் வராது</li>
+          <li>Authorized service center மூலம் மட்டும்</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-emi">
+      <div class="desc-text">
+        <h3>💳 EMI / கிஸ்தி வசதி</h3>
+        <ul>
+          <li>✅ 0% Interest EMI available on select cards</li>
+          <li>✅ 3, 6, 12 மாத EMI options</li>
+          <li>✅ Minimum purchase: ₹5,000</li>
+          <li>✅ HDFC, SBI, ICICI, Axis bank cards accepted</li>
+        </ul>
+        <h3>📞 EMI பற்றி அறிய:</h3>
+        <p>Call us: <a href="tel:7010946746" style="color:var(--primary);font-weight:700">70109 46746</a> or WhatsApp for instant EMI calculation</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- RELATED PRODUCTS -->
+  <div>
+    <div class="section-title"><i class="fas fa-th-large" style="color:var(--primary)"></i> Related Products</div>
+    <div class="related-grid" id="related-grid"></div>
+  </div>
+</div>
+
+<!-- CART OVERLAY -->
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+
+<!-- CART PANEL -->
+<div class="cart-panel" id="cart-panel">
+  <div class="cart-head">
+    <div class="cart-head-title">🛒 Cart</div>
+    <button class="cart-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cart-total-val">₹0</span>
+    </div>
+    <button class="btn-checkout" onclick="checkoutWA()">
+      <i class="fab fa-whatsapp"></i> Order via WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ══════════════════════════════
+//  PRODUCT PAGE
+// ══════════════════════════════
+
+let currentProduct = null;
+let allProducts = [];
+let cart = [];
+let isInCart = false;
+
+// ── Parse URL ──
+function getParams() {
+  const p = new URLSearchParams(window.location.search);
+  return {
+    id: parseInt(p.get('id')) || 0,
+    name: p.get('name') || '',
+    brand: p.get('brand') || '',
+    category: p.get('category') || ''
+  };
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  const params = getParams();
+  cart = JSON.parse(localStorage.getItem('ve_cart') || '[]');
+  updateCartCount();
+
+  // Load products
+  try {
+    allProducts = JSON.parse(localStorage.getItem('ve_products') || '[]');
+  } catch(e) { allProducts = []; }
+
+  // Find current product
+  currentProduct = allProducts.find(p => p.id === params.id) || {
+    id: params.id,
+    name: params.name,
+    brand: params.brand,
+    category: params.category,
+    icon: '📦',
+    price: '',
+    description: '',
+    offer: ''
+  };
+
+  // Load admin images
+  let adminImages = {};
+  try { adminImages = JSON.parse(localStorage.getItem('ve_images') || '{}'); } catch(e) {}
+  const prodImg = adminImages[currentProduct.id] || currentProduct.image || '';
+
+  renderProduct(currentProduct, prodImg);
+  renderRelated(currentProduct, adminImages);
+  loadOffers();
+});
+
+function renderProduct(p, imgSrc) {
+  // Breadcrumb
+  document.getElementById('bc-cat').textContent = p.category;
+  document.getElementById('bc-name').textContent = p.name;
+  document.title = `${p.name} – Vijay Electronics`;
+
+  // Image
+  const imgWrap = document.getElementById('main-img-wrap');
+  if (imgSrc) {
+    imgWrap.innerHTML = `<img src="${imgSrc}" alt="${p.name}" onerror="this.outerHTML='<span class=prod-emoji-big>${p.icon||'📦'}</span>'">`;
+  } else {
+    document.getElementById('prod-emoji').textContent = p.icon || '📦';
+  }
+
+  // Badges
+  const badges = [];
+  if (p.offer) badges.push(`<div class="badge-offer">🎁 ${p.offer}</div>`);
+  imgWrap.innerHTML += `<div class="badge-panel">${badges.join('')}</div>`;
+
+  // Info
+  document.getElementById('prod-cat').textContent = p.category;
+  document.getElementById('prod-name').textContent = p.name;
+  document.getElementById('prod-brand').textContent = p.brand;
+  document.getElementById('prod-id').textContent = 'VE-' + p.id;
+
+  // Price
+  if (p.price) {
+    document.getElementById('prod-price-display').textContent = '₹' + Number(p.price).toLocaleString('en-IN');
+  }
+
+  // Offer pill
+  if (p.offer) {
+    document.getElementById('offer-pill-wrap').innerHTML =
+      `<div class="offer-pill"><i class="fas fa-tag"></i> ${p.offer}</div>`;
+  }
+
+  // Description
+  const catDescriptions = {
+    'Television': `<h3>About This TV</h3><p>${p.brand} ${p.name} is a high-quality television offering an immersive viewing experience. Perfect for home entertainment with crystal-clear picture quality.</p><h3>Key Highlights</h3><ul><li>High-resolution display for sharp, vivid images</li><li>Smart connectivity options</li><li>Energy-efficient design</li><li>Multiple HDMI & USB ports</li><li>Built-in speakers with rich sound</li></ul>`,
+    'SoundBar': `<h3>About This SoundBar</h3><p>${p.brand} ${p.name} delivers powerful, room-filling sound in a sleek design. Perfect companion for your TV setup.</p><h3>Key Highlights</h3><ul><li>Powerful bass with clear treble</li><li>Wireless/wired connectivity options</li><li>Easy wall mount or shelf placement</li><li>Multiple input modes: Bluetooth, USB, AUX</li></ul>`,
+    'Car Amplifiers': `<h3>About This Car Amplifier</h3><p>${p.brand} ${p.name} brings concert-quality sound to your car. Built for performance and durability.</p><h3>Key Highlights</h3><ul><li>High power output</li><li>Low noise floor for clear audio</li><li>Compatible with most head units</li><li>Compact design fits most vehicles</li></ul>`,
+    'default': `<h3>About This Product</h3><p>${p.brand} ${p.name} is a premium quality electronics product from Vijay Electronics. We source all our products directly from authorized distributors ensuring 100% genuine quality.</p><h3>Why Choose This Product?</h3><ul><li>Brand: ${p.brand} – Trusted quality</li><li>Category: ${p.category}</li><li>100% genuine, warranty included</li><li>Expert support from our team</li><li>Available at all 3 Vijay Electronics locations</li></ul><h3>About Vijay Electronics</h3><p>We are Trichy & Madurai's trusted electronics store with 3 convenient locations. Our expert staff will help you choose the perfect product for your needs and budget.</p>`
+  };
+
+  const descHtml = p.description
+    ? `<p>${p.description}</p>` + (catDescriptions[p.category] || catDescriptions.default)
+    : (catDescriptions[p.category] || catDescriptions.default);
+  document.getElementById('desc-text').innerHTML = descHtml;
+
+  // Specs
+  const specs = [
+    { k:'Product Name', v: p.name },
+    { k:'Brand', v: p.brand },
+    { k:'Category', v: p.category },
+    { k:'Product ID', v: 'VE-' + p.id },
+    { k:'Availability', v: '<span style="color:var(--green);font-weight:700">✅ In Stock</span>' },
+    { k:'Warranty', v: 'Manufacturer Warranty' },
+    { k:'Store Locations', v: 'Trichy | Madurai | Othakadai' },
+  ];
+  if (p.price) specs.push({ k:'Price', v: '₹'+Number(p.price).toLocaleString('en-IN') });
+
+  document.getElementById('specs-body').innerHTML = specs.map(s =>
+    `<div class="spec-row"><div class="spec-key">${s.k}</div><div class="spec-val">${s.v}</div></div>`
+  ).join('');
+}
+
+function renderRelated(p, adminImages) {
+  const related = allProducts.filter(x => x.category === p.category && x.id !== p.id).slice(0, 8);
+  if (!related.length) { document.querySelector('.section-title').style.display='none'; return; }
+
+  document.getElementById('related-grid').innerHTML = related.map(r => {
+    const rImg = adminImages[r.id] || r.image || '';
+    const rImgHtml = rImg
+      ? `<img src="${rImg}" alt="${r.name}" onerror="this.outerHTML='<span style=font-size:46px>${r.icon||'📦'}</span>'">`
+      : r.icon || '📦';
+    const prodUrl = `product.html?id=${r.id}&name=${encodeURIComponent(r.name)}&brand=${encodeURIComponent(r.brand)}&category=${encodeURIComponent(r.category)}`;
+    return `<div class="related-card" onclick="window.location.href='${prodUrl}'">
+      <div class="rc-img">${rImg ? `<img src="${rImg}" alt="${r.name}" onerror="this.style.display='none'">` : r.icon||'📦'}</div>
+      <div class="rc-body">
+        <div class="rc-cat">${r.category}</div>
+        <div class="rc-name">${r.name}</div>
+        <div class="rc-brand">${r.brand}</div>
+        ${r.offer ? `<div class="rc-offer">🏷️ ${r.offer}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadOffers() {
+  try {
+    const offers = JSON.parse(localStorage.getItem('ve_offers') || '[]')
+      .filter(o => o.active);
+    if (!offers.length) return;
+    const catOffers = offers.filter(o =>
+      currentProduct && (
+        o.product.toLowerCase().includes(currentProduct.category.toLowerCase()) ||
+        currentProduct.category.toLowerCase().includes(o.product.toLowerCase())
+      )
+    );
+    const displayOffers = [...catOffers, ...offers].slice(0,3);
+    if (displayOffers.length) {
+      document.getElementById('offer-list-items').innerHTML = displayOffers.map(o =>
+        `<div class="offer-list-item"><i class="fas fa-tag"></i> <b>${o.discount}</b> – ${o.detail}</div>`
+      ).join('');
+    }
+  } catch(e) {}
+}
+
+// ── TABS ──
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── CART ──
+function toggleCart() {
+  if (!currentProduct) return;
+  const p = currentProduct;
+  const existing = cart.find(c => c.id === p.id);
+  if (existing) {
+    existing.qty = (existing.qty || 1) + 1;
+    showToast('Cart updated! 🛒', 'success');
+  } else {
+    cart.push({ ...p, qty: 1 });
+    showToast('Added to cart! 🛒', 'success');
+  }
+  localStorage.setItem('ve_cart', JSON.stringify(cart));
+  updateCartCount();
+  const btn = document.getElementById('btn-cart');
+  btn.classList.add('added');
+  btn.innerHTML = '<i class="fas fa-check"></i> Added to Cart!';
+  setTimeout(() => {
+    btn.classList.remove('added');
+    btn.innerHTML = '<i class="fas fa-cart-plus"></i> Add to Cart';
+  }, 2000);
+}
+
+function openCart() {
+  renderCartItems();
+  document.getElementById('cart-panel').classList.add('open');
+  document.getElementById('cart-overlay').classList.add('open');
+}
+
+function closeCart() {
+  document.getElementById('cart-panel').classList.remove('open');
+  document.getElementById('cart-overlay').classList.remove('open');
+}
+
+function renderCartItems() {
+  const el = document.getElementById('cart-items');
+  if (!cart.length) {
+    el.innerHTML = `<div class="cart-empty"><i class="fas fa-shopping-cart"></i><div style="font-size:16px;font-weight:700;margin-top:12px">Cart is empty</div><div style="font-size:13px;margin-top:6px">Add products to order!</div></div>`;
+    document.getElementById('cart-total-val').textContent = '₹0';
+    return;
+  }
+  let total = 0;
+  el.innerHTML = cart.map(item => {
+    if (item.price) total += Number(item.price) * (item.qty||1);
+    return `<div class="cart-item">
+      <div class="ci-emoji">${item.icon||'📦'}</div>
+      <div class="ci-info">
+        <div class="ci-name">${item.name}</div>
+        <div class="ci-brand">${item.brand}</div>
+        <div class="ci-qty">
+          <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+          <span class="qty-num">${item.qty||1}</span>
+          <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+        </div>
+      </div>
+      <button class="ci-del" onclick="removeFromCart(${item.id})"><i class="fas fa-times"></i></button>
+    </div>`;
+  }).join('');
+  document.getElementById('cart-total-val').textContent = total > 0 ? '₹' + total.toLocaleString('en-IN') : 'Contact for Price';
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(c=>c.id===id);
+  if (!item) return;
+  item.qty = Math.max(1, (item.qty||1) + delta);
+  localStorage.setItem('ve_cart', JSON.stringify(cart));
+  renderCartItems();
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(c=>c.id!==id);
+  localStorage.setItem('ve_cart', JSON.stringify(cart));
+  updateCartCount();
+  renderCartItems();
+}
+
+function updateCartCount() {
+  const count = cart.reduce((s,c)=>s+(c.qty||1),0);
+  document.getElementById('cart-nav-count').textContent = count;
+}
+
+function checkoutWA() {
+  if (!cart.length) return;
+  const lines = cart.map(c => `• ${c.name} (${c.brand}) x${c.qty||1}`).join('\n');
+  const msg = `Hi! Vijay Electronics-ல் இந்த products order செய்ய விரும்புகிறேன்:\n\n${lines}\n\nPlease confirm price & availability.`;
+  window.open(`https://wa.me/917010946746?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function enquireWA() {
+  if (!currentProduct) return;
+  const p = currentProduct;
+  const msg = `Hi! Vijay Electronics-ல் இந்த product பற்றி அறிய விரும்புகிறேன்:\n\n📦 ${p.name}\n🏷️ Brand: ${p.brand}\n📂 Category: ${p.category}\n\nPlease share price & availability.`;
+  window.open(`https://wa.me/917010946746?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// ── TOAST ──
+function showToast(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  const colors = { success:'var(--green)', error:'var(--accent)', info:'var(--primary)' };
+  const icons = { success:'fa-check-circle', error:'fa-times-circle', info:'fa-info-circle' };
+  t.innerHTML = `<i class="fas ${icons[type]}" style="color:${colors[type]}"></i> ${msg}`;
+  c.appendChild(t);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); }, 3000);
+}
+</script>
+</body>
+</html>
