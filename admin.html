@@ -536,56 +536,92 @@ function previewImg(inputId, previewId){
 }
 
 // UPLOAD LOCAL IMAGE TO SUPABASE STORAGE
-async function uploadImage(input, urlFieldId, previewId){
+function storagePathFromUrl(url){
+  if(!url) return null;
+  const prefix = SB_URL+'/storage/v1/object/public/product-images/';
+  return url.startsWith(prefix) ? url.slice(prefix.length).split('?')[0] : null;
+}
+async function deleteOldImageIfOwned(oldUrl, newUrl){
+  const path = storagePathFromUrl(oldUrl);
+  if(!path || oldUrl===newUrl) return; // nothing to clean up, or unchanged
+  try{ await sb.storage.from('product-images').remove([path]); }
+  catch(e){ console.warn('Old image cleanup skipped:', e.message); }
+}
+
+function uploadImage(input, urlFieldId, previewId){
   const file = input.files[0];
   if(!file) return;
   if(!file.type.startsWith('image/')){showToast('Only image files allowed!','error');return;}
   if(file.size > 5*1024*1024){showToast('Max 5MB allowed','error');return;}
 
-  // Instant local preview
   const imgEl = document.getElementById(previewId+'-img');
   const wrap   = document.getElementById(previewId);
   const loader = document.getElementById(previewId+'-loader');
   const blobUrl = URL.createObjectURL(file);
   if(imgEl){ imgEl.src = blobUrl; }
   if(wrap)  { wrap.style.display='flex'; }
-  if(loader){ loader.style.display='flex'; }
+  if(loader){ loader.style.display='flex'; loader.innerHTML='<i class="fas fa-spinner fa-spin"></i> Uploading… 0%'; }
+  document.getElementById('storage-hint')?.remove();
 
   const ext   = (file.name.split('.').pop()||'jpg').toLowerCase();
   const base  = file.name.replace(/\.[^/.]+$/,'').replace(/[^a-zA-Z0-9]/g,'_').slice(0,40);
   const path  = 'products/'+Date.now()+'_'+base+'.'+ext;
 
-  try{
-    const {error:upErr} = await sb.storage
-      .from('product-images')
-      .upload(path, file, {cacheControl:'3600', upsert:true, contentType:file.type});
-    if(upErr) throw upErr;
+  // Raw XHR (instead of the supabase-js helper) so we get real upload-progress events
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `${SB_URL}/storage/v1/object/product-images/${path}`, true);
+  xhr.setRequestHeader('Authorization', 'Bearer '+SB_KEY);
+  xhr.setRequestHeader('apikey', SB_KEY);
+  xhr.setRequestHeader('Content-Type', file.type||'application/octet-stream');
+  xhr.setRequestHeader('x-upsert', 'true');
+  xhr.setRequestHeader('cache-control', '3600');
 
-    const {data:urlData} = sb.storage.from('product-images').getPublicUrl(path);
-    document.getElementById(urlFieldId).value = urlData.publicUrl;
-    if(imgEl) imgEl.src = urlData.publicUrl;
-    if(loader) loader.style.display='none';
-    document.getElementById('storage-hint')?.remove();
-    showToast('✅ Image uploaded!','success');
-  }catch(err){
-    if(loader) loader.style.display='none';
-    document.getElementById(urlFieldId).value='';
-    document.getElementById('storage-hint')?.remove();
-    const hint=document.createElement('div');
-    hint.id='storage-hint';
-    hint.style.cssText='margin-top:8px;padding:11px 13px;background:#fff5f5;border:1.5px solid #fed7d7;border-radius:8px;font-size:12px;color:#c53030;line-height:1.7';
-    hint.innerHTML='<b>⚠️ Storage error:</b> '+err.message+'<br>'
-      +'Run in Supabase SQL Editor:<br>'
-      +'<code style="font-size:11px;background:#fff;padding:2px 6px;border-radius:4px;display:block;margin-top:4px;color:#991b1b">'
-      +'drop policy if exists &quot;Public upload product-images&quot; on storage.objects;<br>'
-      +'drop policy if exists &quot;Public read product-images&quot; on storage.objects;<br>'
-      +'create policy &quot;Public upload product-images&quot; on storage.objects for insert with check (bucket_id = 'product-images');<br>'
-      +'create policy &quot;Public read product-images&quot; on storage.objects for select using (bucket_id = 'product-images');'
-      +'</code>';
-    const prev=document.getElementById(previewId);
-    if(prev) prev.parentNode.insertBefore(hint, prev.nextSibling);
-    showToast('Storage error — check below','error');
-  }
+  xhr.upload.onprogress = (e)=>{
+    if(!e.lengthComputable || !loader) return;
+    const pct = Math.round((e.loaded/e.total)*100);
+    loader.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading… ${pct}%`;
+  };
+
+  xhr.onload = ()=>{
+    if(xhr.status>=200 && xhr.status<300){
+      const { data:urlData } = sb.storage.from('product-images').getPublicUrl(path);
+      document.getElementById(urlFieldId).value = urlData.publicUrl;
+      if(imgEl) imgEl.src = urlData.publicUrl;
+      if(loader) loader.style.display='none';
+      showToast('✅ Image uploaded!','success');
+    }else{
+      let msg='Upload failed ('+xhr.status+')';
+      try{ msg = JSON.parse(xhr.responseText).message || msg; }catch(e){}
+      showUploadError(previewId, urlFieldId, loader, msg);
+    }
+  };
+  xhr.onerror = ()=> showUploadError(previewId, urlFieldId, loader, 'Network error reaching Supabase Storage');
+  xhr.send(file);
+}
+
+function showUploadError(previewId, urlFieldId, loader, message){
+  if(loader) loader.style.display='none';
+  document.getElementById(urlFieldId).value='';
+  document.getElementById('storage-hint')?.remove();
+  const hint=document.createElement('div');
+  hint.id='storage-hint';
+  hint.style.cssText='margin-top:8px;padding:11px 13px;background:#fff5f5;border:1.5px solid #fed7d7;border-radius:8px;font-size:12px;color:#c53030;line-height:1.7';
+  hint.innerHTML='<b>⚠️ Storage error:</b> '+message+'<br>'
+    +'Run this once in Supabase → SQL Editor:<br>'
+    +'<code style="font-size:11px;background:#fff;padding:2px 6px;border-radius:4px;display:block;margin-top:4px;color:#991b1b">'
+    +'insert into storage.buckets (id,name,public) values (&#39;product-images&#39;,&#39;product-images&#39;,true) on conflict (id) do update set public=true;<br>'
+    +'drop policy if exists &quot;Public upload product-images&quot; on storage.objects;<br>'
+    +'drop policy if exists &quot;Public read product-images&quot; on storage.objects;<br>'
+    +'drop policy if exists &quot;Public update product-images&quot; on storage.objects;<br>'
+    +'drop policy if exists &quot;Public delete product-images&quot; on storage.objects;<br>'
+    +'create policy &quot;Public upload product-images&quot; on storage.objects for insert with check (bucket_id = &#39;product-images&#39;);<br>'
+    +'create policy &quot;Public read product-images&quot; on storage.objects for select using (bucket_id = &#39;product-images&#39;);<br>'
+    +'create policy &quot;Public update product-images&quot; on storage.objects for update using (bucket_id = &#39;product-images&#39;);<br>'
+    +'create policy &quot;Public delete product-images&quot; on storage.objects for delete using (bucket_id = &#39;product-images&#39;);'
+    +'</code>';
+  const prev=document.getElementById(previewId);
+  if(prev) prev.parentNode.insertBefore(hint, prev.nextSibling);
+  showToast('Storage error — check below','error');
 }
 
 
@@ -602,15 +638,17 @@ async function saveEdit(){
   if(!upd.name||!upd.brand||!upd.category){showToast('Name, Brand, Category required','error');return;}
   const btn=document.querySelector('#edit-modal .btn-sv');
   if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Saving...';}
+  const p=PRODUCTS.find(x=>x.id==editId);
+  const prevImageUrl = p ? p.image_url : null;
   try{
     const{error}=await sb.from('products').update(upd).eq('id',editId);
     if(error) throw error;
-    const p=PRODUCTS.find(x=>x.id==editId);
     if(p) Object.assign(p,upd);
     localStorage.setItem('ve_products',JSON.stringify(PRODUCTS));
     renderTable(); renderDashboard();
     closeEditModal();
     showToast('✅ Product updated in Supabase!','success');
+    deleteOldImageIfOwned(prevImageUrl, upd.image_url); // best-effort, non-blocking
   }catch(e){
     showToast('❌ '+e.message,'error');
     console.error('saveEdit:',e.message);
@@ -622,7 +660,9 @@ async function saveEdit(){
 
 async function deleteProduct(id){
   if(!confirm('Delete this product?'))return;
+  const p=PRODUCTS.find(x=>x.id==id);
   try{await sb.from('products').delete().eq('id',id);}catch{}
+  if(p) deleteOldImageIfOwned(p.image_url, null); // best-effort, non-blocking
   PRODUCTS=PRODUCTS.filter(p=>p.id!=id);localStorage.setItem('ve_products',JSON.stringify(PRODUCTS));renderTable();renderDashboard();document.getElementById('sb-pc').textContent=PRODUCTS.length;showToast('Deleted','error');
 }
 
