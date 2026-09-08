@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Vijay Electronics – Trichy, Madurai & Othakadai | TVs, Audio, Amplifiers & Home Appliances</title>
+<title>Vijay Electronics – Trichy, Madurai & Othakadai | TVs, Audio, Amplifiers & Home Appliances [Style: Bold]</title>
 <meta name="description" content="Vijay Electronics – Wholesale electronics store with 3 locations in Trichy, Madurai & Othakadai. Shop TVs, soundbars, amplifiers, speakers, stabilizers, fans and home appliances at genuine wholesale prices. Order online or on WhatsApp."/>
 <meta property="og:title" content="Vijay Electronics – Trichy, Madurai & Othakadai"/>
 <meta property="og:description" content="Wholesale electronics, audio equipment & home appliances. 3 stores, genuine prices, WhatsApp ordering."/>
@@ -365,6 +365,12 @@ nav{position:sticky;top:0;z-index:400;background:rgba(255,255,255,.96);backdrop-
 .mnp-hd{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}
 .mnp-it{display:flex;align-items:center;gap:11px;padding:13px 18px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--bg)}
 .mnp-sec{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);padding:14px 18px 4px}
+
+/* ===== SHOP-NAME ROTATE + CLICK BLINK ===== */
+.logo-ic{display:inline-block;margin-right:6px;animation:logospin 5s linear infinite;transform-origin:50% 55%}
+@keyframes logospin{to{transform:rotate(360deg)}}
+.click-ripple{position:fixed;width:44px;height:44px;border-radius:50%;pointer-events:none;z-index:9999;background:radial-gradient(circle,var(--amb) 0%,transparent 70%);opacity:.6;transform:translate(-50%,-50%) scale(0);animation:rippleblink .55s ease-out forwards}
+@keyframes rippleblink{0%{transform:translate(-50%,-50%) scale(0);opacity:.65}70%{opacity:.35}100%{transform:translate(-50%,-50%) scale(2.1);opacity:0}}
 </style>
 </head>
 <body>
@@ -397,7 +403,7 @@ nav{position:sticky;top:0;z-index:400;background:rgba(255,255,255,.96);backdrop-
 <nav>
   <div class="navi">
     <div class="logo" onclick="showPage('home')">
-      <div class="logo-m">VIJAY <span>ELECTRONICS</span></div>
+      <div class="logo-m"><span class="logo-ic">🔊</span>VIJAY <span>ELECTRONICS</span></div>
       <div class="logo-s">Trichy · Wholesale Prices</div>
     </div>
     <div class="searchw">
@@ -652,6 +658,13 @@ document.addEventListener('mousemove',e=>{
   const bg=document.getElementById('bg3d');if(!bg)return;
   const x=(e.clientX/window.innerWidth-.5)*24,y=(e.clientY/window.innerHeight-.5)*24;
   bg.style.transform=`translate(${x}px,${y}px)`;
+});
+document.addEventListener('click',e=>{
+  const r=document.createElement('div');
+  r.className='click-ripple';
+  r.style.left=e.clientX+'px';r.style.top=e.clientY+'px';
+  document.body.appendChild(r);
+  setTimeout(()=>r.remove(),600);
 });
 document.addEventListener('DOMContentLoaded',async()=>{
   await loadProducts();
