@@ -1,14 +1,17 @@
+
+
+Index · HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vijay Electronics — Sound, Screens & Home Essentials | Trichy</title>
-
+ 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
+ 
 <style>
 /* Vijay Electronics — storefront styles */
 :root{
@@ -51,7 +54,7 @@ img{max-width:100%;display:block;}
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
 :focus-visible{outline:3px solid var(--amber);outline-offset:2px;}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;}}
-
+ 
 /* ---------- Topbar ---------- */
 .topbar{background:var(--navy);color:#c9d3e8;font-size:13px;}
 .topbar .wrap{display:flex;justify-content:space-between;align-items:center;height:36px;gap:16px;flex-wrap:wrap;}
@@ -59,7 +62,7 @@ img{max-width:100%;display:block;}
 .topbar .badge{color:#ffcf9a;display:flex;align-items:center;gap:6px;}
 .topbar .left{display:flex;gap:22px;}
 .topbar .left span{display:flex;align-items:center;gap:6px;}
-
+ 
 /* ---------- Header ---------- */
 header.site{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40;}
 .headerbar{display:flex;align-items:center;gap:28px;height:78px;}
@@ -96,7 +99,7 @@ header.site{background:#fff;border-bottom:1px solid var(--line);position:sticky;
 .cartcount{position:absolute;top:-4px;right:-4px;background:var(--amber);color:#fff;font-size:10.5px;font-weight:800;border-radius:50%;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 3px;}
 .mobile-only{display:none;}
 .desk-only{display:flex;}
-
+ 
 /* ---------- Hero ---------- */
 .hero{background:linear-gradient(150deg,var(--navy) 0%,var(--navy-3) 100%);color:#fff;position:relative;overflow:hidden;}
 .hero .wrap{display:grid;grid-template-columns:1.25fr .85fr;gap:56px;padding:64px 24px 88px;align-items:center;}
@@ -123,14 +126,33 @@ header.site{background:#fff;border-bottom:1px solid var(--line);position:sticky;
 .trust-ic{width:38px;height:38px;border-radius:10px;background:rgba(232,135,30,.22);color:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .trust-t{font-weight:700;font-size:14.5px;color:#fff;}
 .trust-d{font-size:12.5px;color:#aebada;margin-top:2px;}
-
+ 
+/* ---------- Hero carousel (flowing shop photos + offers) ---------- */
+.hero-carousel{position:relative;overflow:hidden;background:var(--navy);color:#fff;}
+.hero-track{display:flex;transition:transform .9s cubic-bezier(.65,0,.35,1);}
+.hero-slide{min-width:100%;position:relative;display:flex;align-items:center;min-height:440px;padding:64px 24px;}
+.hero-slide-bg{position:absolute;inset:0;z-index:0;background:linear-gradient(150deg,var(--navy) 0%,var(--navy-3) 100%);}
+.hero-slide-bg .photo-slot,.hero-slide-bg img{width:100%;height:100%;object-fit:cover;}
+.hero-slide-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,30,59,.92) 0%,rgba(14,30,59,.55) 55%,rgba(14,30,59,.25) 100%);}
+.hero-slide-bg .photo-fallback{background:transparent;}
+.hero-slide-body{position:relative;z-index:1;max-width:640px;margin:0 auto;width:100%;padding:0 24px;animation:heroFade .7s ease both;}
+@keyframes heroFade{from{opacity:0;transform:translateY(16px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+.hero-slide-body h1{font-size:42px;line-height:1.12;color:#fff;}
+.hero-slide-body h1 em{font-style:normal;color:var(--amber);}
+.hero-slide-body p.lead{color:#c9d3e8;font-size:16px;max-width:480px;margin-top:16px;}
+.hero-dots{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2;}
+.hero-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;transition:.2s;}
+.hero-dot.active{background:var(--amber);width:22px;border-radius:5px;}
+.trust-strip{background:#fff;border-bottom:1px solid var(--line);}
+.trust-strip .wrap{display:flex;justify-content:center;gap:36px;padding:14px 24px;flex-wrap:wrap;font-size:13px;font-weight:600;color:var(--muted);}
+ 
 /* ---------- Sections ---------- */
 section.pad{padding:64px 0;}
 .sec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:30px;gap:20px;flex-wrap:wrap;}
 .sec-head h2{font-size:28px;}
 .sec-head p{color:var(--muted);font-size:14.5px;margin-top:4px;}
 .sec-link{font-weight:700;color:var(--amber-dark);font-size:14px;white-space:nowrap;}
-
+ 
 /* Stores */
 .stores-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
 .stores-simple-list{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-lg);padding:6px 24px;}
@@ -148,7 +170,7 @@ section.pad{padding:64px 0;}
 .store-phone{font-size:14.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px;margin-bottom:16px;}
 .store-actions{display:flex;gap:10px;}
 .store-actions .btn{flex:1;padding:10px 12px;font-size:13px;}
-
+ 
 /* Category grid */
 .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
 .cat-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;text-align:left;transition:border-color .15s,transform .15s,box-shadow .15s;padding:0;display:flex;flex-direction:column;}
@@ -157,7 +179,7 @@ section.pad{padding:64px 0;}
 .cat-card h4{font-size:16px;}
 .cat-count{font-size:12.5px;color:var(--muted);margin-top:3px;}
 .combo-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;width:100%;aspect-ratio:4/3;gap:2px;background:var(--line);}
-
+ 
 /* ---------- Photo slot (real image w/ icon fallback) ---------- */
 .photo-slot{position:relative;width:100%;height:100%;display:block;}
 .photo-slot img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -173,7 +195,7 @@ section.pad{padding:64px 0;}
 .sugg-photo{width:38px;height:38px;border-radius:8px;overflow:hidden;flex-shrink:0;}
 .sugg-photo .photo-fallback{background:var(--navy);color:#fff;}
 .sugg-photo .photo-fallback svg{width:50%;height:50%;}
-
+ 
 /* Product grid */
 .prod-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
 .prod-card{background:#fff;border:1.5px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s, transform .15s;position:relative;}
@@ -195,7 +217,7 @@ section.pad{padding:64px 0;}
 .prod-stock{font-size:11.5px;color:var(--emerald-dark);font-weight:600;}
 .prod-actions{display:flex;gap:8px;margin-top:10px;}
 .prod-actions .btn{flex:1;padding:9px 10px;font-size:12.5px;}
-
+ 
 /* Offers */
 .offer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
 .offer-card{background:linear-gradient(160deg,var(--navy),var(--navy-3));border-radius:var(--radius-lg);padding:20px;color:#fff;}
@@ -207,12 +229,12 @@ section.pad{padding:64px 0;}
 .offer-card .price{font-size:26px;font-weight:800;color:#ffcf9a;margin:10px 0 14px;}
 .offer-list{font-size:12.5px;color:#c9d3e8;margin:0 0 16px;padding-left:0;list-style:none;}
 .offer-list li{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;}
-
+ 
 /* Promo banner */
 .promo{background:var(--amber);border-radius:var(--radius-lg);padding:44px 48px;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;color:#fff;}
 .promo h3{color:#fff;font-size:25px;max-width:520px;}
 .promo p{color:rgba(255,255,255,.9);font-size:14.5px;margin-top:6px;}
-
+ 
 /* Footer */
 footer{background:var(--navy);color:#c9d3e8;padding:56px 0 26px;margin-top:40px;}
 .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px;}
@@ -223,13 +245,13 @@ footer{background:var(--navy);color:#c9d3e8;padding:56px 0 26px;margin-top:40px;
 .foot-logo span{color:var(--amber);}
 .foot-desc{font-size:13.5px;color:#aebada;max-width:320px;line-height:1.6;}
 .foot-bottom{border-top:1px solid rgba(255,255,255,.12);margin-top:40px;padding-top:22px;display:flex;justify-content:space-between;font-size:12.5px;color:#8b98b8;flex-wrap:wrap;gap:10px;}
-
+ 
 /* Breadcrumb / page header */
 .pagehead{background:#fff;border-bottom:1px solid var(--line);padding:22px 0;}
 .crumbs{font-size:13px;color:var(--muted);}
 .crumbs a:hover{color:var(--amber-dark);}
 .pagehead h1{font-size:24px;margin-top:6px;}
-
+ 
 /* Category / listing layout */
 .listing{display:grid;grid-template-columns:250px 1fr;gap:32px;align-items:start;padding:36px 0 70px;}
 .filterbox{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:20px;position:sticky;top:96px;}
@@ -242,11 +264,11 @@ footer{background:var(--navy);color:#c9d3e8;padding:56px 0 26px;margin-top:40px;
 .listing-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
 .listing-top .count{color:var(--muted);font-size:13.5px;}
 select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px;font-size:13.5px;background:#fff;color:var(--ink);}
-
+ 
 /* Empty state */
 .empty{text-align:center;padding:70px 20px;color:var(--muted);}
 .empty h3{color:var(--navy);margin-bottom:8px;}
-
+ 
 /* Product detail */
 .pdp{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;padding:40px 0 70px;}
 .pdp-gallery-main{aspect-ratio:1;border-radius:20px;background:linear-gradient(135deg,#eef1f8,#e3e8f2);display:flex;align-items:center;justify-content:center;color:var(--navy-3);position:relative;overflow:hidden;}
@@ -272,7 +294,7 @@ select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px
 .pdp-tab.active{color:var(--navy);border-color:var(--amber);}
 .spec-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
 .spec-row span:first-child{color:var(--muted);}
-
+ 
 /* Cart */
 .cart-layout{display:grid;grid-template-columns:1fr 340px;gap:32px;padding:40px 0 70px;align-items:start;}
 .cart-item{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--line);align-items:center;}
@@ -287,7 +309,7 @@ select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px
 .summary-row.total{border-top:1.5px solid var(--line);margin-top:8px;padding-top:14px;font-size:16.5px;font-weight:800;color:var(--navy);}
 .couponrow{display:flex;gap:8px;margin:14px 0;}
 .couponrow input{flex:1;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px;}
-
+ 
 /* Checkout form */
 .checkout-layout{display:grid;grid-template-columns:1fr 340px;gap:32px;padding:40px 0 70px;align-items:start;}
 .formcard{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:28px;}
@@ -305,16 +327,16 @@ select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px
 .paymethods{display:flex;gap:12px;margin-top:6px;}
 .paymethod{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:14px;text-align:center;cursor:pointer;font-size:13.5px;font-weight:700;}
 .paymethod.active{border-color:var(--amber);background:#fff7ee;color:var(--amber-dark);}
-
+ 
 /* order success */
 .ordersuccess{max-width:520px;margin:70px auto;text-align:center;padding:0 20px;}
 .ordersuccess .tick{width:74px;height:74px;border-radius:50%;background:#eafbf3;color:var(--emerald-dark);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;}
 .ordersuccess .oid{background:#f3f0e9;border-radius:12px;padding:16px;font-weight:800;font-size:18px;color:var(--navy);margin:20px 0;letter-spacing:.03em;}
-
+ 
 /* toast */
 .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:100;display:flex;align-items:center;gap:10px;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
+ 
 /* modal */
 .modal-bg{position:fixed;inset:0;background:rgba(14,30,59,.55);display:none;align-items:center;justify-content:center;z-index:90;padding:20px;}
 .modal-bg.open{display:flex;}
@@ -326,11 +348,14 @@ select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px
 .modal-tabs{display:flex;gap:6px;background:#f3f0e9;border-radius:10px;padding:4px;margin-bottom:20px;}
 .modal-tabs button{flex:1;padding:9px;border-radius:8px;font-size:13.5px;font-weight:700;color:var(--muted);}
 .modal-tabs button.active{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.08);}
-
+ 
 /* Mobile */
 @media (max-width:980px){
   .hero .wrap{grid-template-columns:1fr;padding:40px 20px 56px;}
   .hero h1{font-size:34px;}
+  .hero-slide{min-height:380px;padding:44px 20px;}
+  .hero-slide-body h1{font-size:28px;}
+  .trust-strip .wrap{gap:16px;font-size:12px;}
   .stores-grid{grid-template-columns:1fr;}
   .cat-grid{grid-template-columns:repeat(2,1fr);}
   .prod-grid{grid-template-columns:repeat(2,1fr);}
@@ -349,7 +374,7 @@ select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px
   .searchbox{order:3;flex-basis:100%;max-width:none;margin:0 0 12px;}
   .headerbar{flex-wrap:wrap;}
 }
-
+ 
 </style>
 </head>
 <body>
@@ -366,13 +391,13 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
   var SUPABASE_URL = window.__VE_SUPABASE_URL__;
   var SUPABASE_ANON_KEY = window.__VE_SUPABASE_ANON_KEY__;
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+ 
   var PRODUCTS = [];
   var GROUPS = [];
   var CATEGORY_ICON = {};
   var STORES = [];
   var OFFERS = [];
-
+ 
   var state = {
     cart: {},
     route: {name:'loading'},
@@ -383,7 +408,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     dataReady: false,
     adminTab: 'products'
   };
-
+ 
   function money(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
   function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
   function initials(name){
@@ -413,7 +438,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     }).join('');
     return '<div class="combo-grid">'+quads+'</div>';
   }
-
+ 
   var ICONS = {
     tv:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
     speaker:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2"/><circle cx="12" cy="8" r="2"/><circle cx="12" cy="15" r="3.2"/></svg>',
@@ -457,7 +482,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     usb:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="9" width="12" height="6" rx="1"/><path d="M16 12h4M18 12v0"/><circle cx="21" cy="12" r="1.4"/></svg>',
     heater:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8c0 1.5 2 1.5 2 3s-2 1.5-2 3M13 8c0 1.5 2 1.5 2 3s-2 1.5-2 3"/></svg>'
   };
-
+ 
   /* ============================================================
      DATA LOADING (Supabase)
      ============================================================ */
@@ -495,7 +520,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       throw err;
     });
   }
-
+ 
   function refreshSession(){
     return sb.auth.getSession().then(function(res){
       var session = res.data && res.data.session;
@@ -517,7 +542,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       });
     }).catch(function(err){ console.error('Session check failed', err); });
   }
-
+ 
   /* ============================================================
      ROUTER
      ============================================================ */
@@ -537,7 +562,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     return {name:'home'};
   }
   function nav(hash){ location.hash = hash; }
-
+ 
   /* ============================================================
      CART
      ============================================================ */
@@ -572,7 +597,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
   function updateCartBadge(){
     document.querySelectorAll('.cartcount').forEach(function(el){ el.textContent = cartCount(); });
   }
-
+ 
   var toastTimer;
   function toast(title, sub){
     var el = document.getElementById('toast');
@@ -581,7 +606,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 2200);
   }
-
+ 
   /* ============================================================
      RENDERING — storefront
      ============================================================ */
@@ -610,7 +635,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '</div>' +
     '</div>';
   }
-
+ 
   function renderHeader(){
     var accountBlock;
     if(state.user){
@@ -656,7 +681,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '</div>' +
     '</div></header>';
   }
-
+ 
   function renderFooter(){
     return '' +
     '<footer><div class="wrap">' +
@@ -687,7 +712,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '</div>' +
     '</div></footer>';
   }
-
+ 
   function renderStoreCard(s){
     return '' +
     '<div class="store-card '+(s.ho?'ho':'')+'">' +
@@ -701,7 +726,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '</div>' +
     '</div>';
   }
-
+ 
   function renderStoreSimple(s){
     return '<div class="store-simple">' +
       '<h4>'+s.name+(s.ho ? ' <span class="hoTag">(Head Office)</span>' : '')+'</h4>' +
@@ -709,7 +734,81 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '<p>📞 <a href="tel:'+s.phone+'">'+s.phone+'</a> &middot; <a href="'+(s.whatsapp||('https://wa.me/91'+s.phone))+'" target="_blank" rel="noopener">WhatsApp</a></p>' +
     '</div>';
   }
-
+ 
+  var heroTimer = null;
+  var heroIndex = 0;
+ 
+  function buildHeroSlides(){
+    var slides = [{
+      eyebrow: '⚡ WHOLESALE PRICES · 3 STORES IN & AROUND TRICHY',
+      title: 'Sound, Screens &amp; <em>Home Essentials</em>, at Genuine Prices',
+      sub: 'TVs, amplifiers, speakers, stabilizers, fans and home appliances — order online and pick up at your nearest store, or get it delivered.',
+      img: storageUrl('banners','hero-1.jpg'),
+      cta: {label:'🛒 Browse Products', hash:'#/group/tv'}
+    }];
+    STORES.forEach(function(s, i){
+      slides.push({
+        eyebrow: '📍 VISIT US',
+        title: 'Our '+s.name+' Store'+(s.ho?' <em>(Head Office)</em>':''),
+        sub: s.addr,
+        img: storageUrl('banners','hero-'+(i+2)+'.jpg'),
+        cta: {label:'Get Directions', hash:'#/stores'}
+      });
+    });
+    OFFERS.slice(0,3).forEach(function(o){
+      slides.push({
+        eyebrow: '🔥 '+(o.tag||'OFFER'),
+        title: o.title,
+        sub: 'Combo price '+o.price+' — while stocks last.',
+        img: storageUrl('offers', o.id+'.jpg'),
+        cta: {label:'View Offer', hash:'#/offers'}
+      });
+    });
+    return slides;
+  }
+ 
+  function heroSlideHtml(s){
+    return '<div class="hero-slide">' +
+      '<div class="hero-slide-bg">'+photoSlot(s.img, ICONS.box)+'</div>' +
+      '<div class="hero-slide-body">' +
+        '<div class="hero-eyebrow">'+s.eyebrow+'</div>' +
+        '<h1>'+s.title+'</h1>' +
+        '<p class="lead">'+s.sub+'</p>' +
+        '<div class="ctas"><button class="btn btn-amber" data-nav="'+s.cta.hash+'">'+s.cta.label+'</button></div>' +
+      '</div>' +
+    '</div>';
+  }
+ 
+  function renderHeroCarousel(){
+    var slides = buildHeroSlides();
+    heroIndex = 0;
+    return '' +
+    '<section class="hero-carousel">' +
+      '<div class="hero-track" id="heroTrack">'+slides.map(heroSlideHtml).join('')+'</div>' +
+      '<div class="hero-dots">'+slides.map(function(s,i){return '<span class="hero-dot'+(i===0?' active':'')+'" data-hero-dot="'+i+'"></span>';}).join('')+'</div>' +
+    '</section>' +
+    '<div class="trust-strip"><div class="wrap">' +
+      '<span>🚚 Store Pickup or Delivery</span><span>🛡️ Brand Warranty</span><span>💬 WhatsApp Support</span>' +
+    '</div></div>';
+  }
+ 
+  function initHeroCarousel(){
+    clearInterval(heroTimer);
+    var track = document.getElementById('heroTrack');
+    if(!track) return;
+    var dots = document.querySelectorAll('[data-hero-dot]');
+    var count = dots.length;
+    function goTo(i){
+      heroIndex = (i + count) % count;
+      track.style.transform = 'translateX(-'+(heroIndex*100)+'%)';
+      dots.forEach(function(d,idx){ d.classList.toggle('active', idx===heroIndex); });
+    }
+    dots.forEach(function(d){
+      d.addEventListener('click', function(){ goTo(parseInt(d.getAttribute('data-hero-dot'),10)); clearInterval(heroTimer); heroTimer = setInterval(function(){ goTo(heroIndex+1); }, 4500); });
+    });
+    heroTimer = setInterval(function(){ goTo(heroIndex+1); }, 4500);
+  }
+ 
   function renderHome(){
     var groupCards = GROUPS.map(function(g){
       return '<button class="cat-card" data-nav="#/group/'+g.id+'">' +
@@ -717,7 +816,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         '<div class="cat-card-body"><h4>'+g.name+'</h4></div>' +
       '</button>';
     }).join('');
-
+ 
     var featuredGroups = ['tv','audio','fans','kitchen'];
     var featSections = featuredGroups.map(function(gid){
       var g = GROUPS.find(function(x){return x.id===gid;});
@@ -733,7 +832,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         '</div>' +
       '</section>';
     }).join('');
-
+ 
     var offerCards = OFFERS.slice(0,3).map(function(o){
       return '<div class="offer-card">' +
         photoSlot(storageUrl('offers', o.id+'.jpg'), ICONS.box, 'offer-photo') +
@@ -744,50 +843,35 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         '<button class="btn btn-ghost btn-block" data-nav="#/offers">View Offer</button>' +
       '</div>';
     }).join('');
-
+ 
     return '' +
-    '<section class="hero"><div class="wrap">' +
-      '<div>' +
-        '<div class="hero-eyebrow">⚡ WHOLESALE PRICES · 3 STORES IN &amp; AROUND TRICHY</div>' +
-        '<h1>Sound, Screens &amp; <em>Home Essentials</em>, at Genuine Prices</h1>' +
-        '<p class="lead">TVs, amplifiers, speakers, stabilizers, fans and home appliances — order online and pick up at your nearest store, or get it delivered.</p>' +
-        '<div class="ctas">' +
-          '<button class="btn btn-amber" data-nav="#/group/tv">🛒 Browse Products</button>' +
-          '<a class="btn btn-ghost" href="https://wa.me/917010946746" target="_blank" rel="noopener">💬 WhatsApp Us</a>' +
-        '</div>' +
-      '</div>' +
-      '<div class="trustcard">' +
-        '<div class="trust-row"><div class="trust-ic">🚚</div><div><div class="trust-t">Store Pickup or Delivery</div><div class="trust-d">Choose what works for you</div></div></div>' +
-        '<div class="trust-row"><div class="trust-ic">🛡️</div><div><div class="trust-t">Brand Warranty</div><div class="trust-d">100% genuine, billed products</div></div></div>' +
-        '<div class="trust-row"><div class="trust-ic">💬</div><div><div class="trust-t">WhatsApp Support</div><div class="trust-d">Order or ask questions anytime</div></div></div>' +
-      '</div>' +
-    '</div></section>' +
-
+    renderHeroCarousel() +
+ 
     '<section class="pad"><div class="wrap">' +
       '<div class="sec-head"><div><h2>Shop by Category</h2></div></div>' +
       '<div class="cat-grid">'+groupCards+'</div>' +
     '</div></section>' +
-
+ 
     '<section class="pad" style="padding-top:0"><div class="wrap">' +
       '<div class="sec-head"><div><h2>Today\'s Offers</h2><p>Combo deals, while stocks last</p></div><a class="sec-link" href="#/offers">See all offers →</a></div>' +
       '<div class="offer-grid">'+offerCards+'</div>' +
     '</div></section>' +
-
+ 
     featSections +
-
+ 
     '<section class="pad" style="padding-top:0"><div class="wrap">' +
       '<div class="promo">' +
         '<div><h3>Upgrading your home theatre this festive season?</h3><p>Talk to our Trichy team on WhatsApp for a free bundle quote.</p></div>' +
         '<a class="btn btn-navy" href="https://wa.me/917010946746" target="_blank" rel="noopener">Chat With Us</a>' +
       '</div>' +
     '</div></section>' +
-
+ 
     '<section class="pad" style="padding-top:0"><div class="wrap">' +
       '<div class="sec-head"><div><h2>Visit Us</h2><p>Our Stores</p></div><a class="sec-link" href="#/stores">Get directions →</a></div>' +
       '<div class="stores-simple-list">'+STORES.map(renderStoreSimple).join('')+'</div>' +
     '</div></section>';
   }
-
+ 
   function renderGroup(gid){
     var g = GROUPS.find(function(x){return x.id===gid;}) || GROUPS[0];
     if(!g) return '<div class="empty"><h3>No categories yet</h3></div>';
@@ -796,17 +880,17 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     all.forEach(function(p){ cats[p.category] = (cats[p.category]||0)+1; });
     var activeCat = state.route.cat || null;
     var sort = state.route.sort || 'relevance';
-
+ 
     var list = activeCat ? all.filter(function(p){return p.category===activeCat;}) : all;
     if(sort==='low') list = list.slice().sort(function(a,b){return a.price-b.price;});
     if(sort==='high') list = list.slice().sort(function(a,b){return b.price-a.price;});
     if(sort==='discount') list = list.slice().sort(function(a,b){return discPct(b)-discPct(a);});
-
+ 
     var chips = '<div class="filter-chip'+(!activeCat?' active':'')+'" data-cat="">All '+g.name+'</div>' +
       Object.keys(cats).sort().map(function(c){
         return '<div class="filter-chip'+(activeCat===c?' active':'')+'" data-cat="'+escapeHtml(c)+'">'+escapeHtml(c)+'</div>';
       }).join('');
-
+ 
     return '' +
     '<div class="pagehead"><div class="wrap">' +
       '<div class="crumbs"><a href="#/">Home</a> / '+g.name+'</div>' +
@@ -831,7 +915,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '</div>' +
     '</div>';
   }
-
+ 
   function renderProduct(id){
     var p = PRODUCTS.find(function(x){return String(x.id)===String(id);});
     if(!p) return '<div class="empty"><h3>Product not found</h3><p>It may have been removed.</p><a class="btn btn-navy" href="#/">Back to Home</a></div>';
@@ -873,7 +957,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     '</div>' +
     (related.length ? '<div class="wrap"><div class="sec-head"><h2>Related Products</h2></div><div class="prod-grid" style="margin-bottom:60px">'+related.map(productCard).join('')+'</div></div>' : '');
   }
-
+ 
   function renderOffers(){
     if(!OFFERS.length) return '<div class="wrap"><div class="empty"><h3>No active offers right now</h3><p>Check back soon.</p></div></div>';
     var cards = OFFERS.map(function(o){
@@ -888,12 +972,12 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     return '<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="#/">Home</a> / Offers</div><h1>Today\'s Offers</h1></div></div>' +
       '<div class="wrap pad"><div class="offer-grid">'+cards+'</div></div>';
   }
-
+ 
   function renderStores(){
     return '<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="#/">Home</a> / Stores</div><h1>Our Stores</h1></div></div>' +
       '<div class="wrap pad"><div class="stores-grid">'+STORES.map(renderStoreCard).join('')+'</div></div>';
   }
-
+ 
   function renderCart(){
     var t = cartTotals();
     if(t.lines.length===0){
@@ -925,7 +1009,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '</div>' +
     '</div>';
   }
-
+ 
   function renderCheckout(){
     var t = cartTotals();
     if(t.lines.length===0){
@@ -978,7 +1062,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
   function field(id,label,type,full,val){
     return '<div class="field'+(full?' full':'')+'" data-field="'+id+'"><label>'+label+'</label><input type="'+type+'" id="'+id+'" value="'+escapeHtml(val||'')+'"><div class="errmsg">This field is required.</div></div>';
   }
-
+ 
   function renderSuccess(){
     var o = state.lastOrder;
     if(!o) return '<div class="wrap"><div class="empty"><h3>No recent order</h3><a class="btn btn-navy" href="#/">Back to Home</a></div></div>';
@@ -991,7 +1075,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '<a class="btn btn-navy" href="#/orders" style="margin-top:20px">View My Orders</a>' +
     '</div>';
   }
-
+ 
   function renderMyOrders(){
     if(!state.user){
       return '<div class="wrap"><div class="empty"><h3>Please log in</h3><p>Log in to see your order history.</p><button class="btn btn-navy" id="ordersLoginBtn">Login / Register</button></div></div>';
@@ -999,7 +1083,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     return '<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="#/">Home</a> / My Orders</div><h1>My Orders</h1></div></div>' +
       '<div class="wrap pad" id="myOrdersList"><p style="color:var(--muted)">Loading your orders…</p></div>';
   }
-
+ 
   function loadMyOrdersInto(elId){
     sb.from('orders').select('*, order_items(*)').eq('profile_id', state.user.id).order('created_at', {ascending:false})
       .then(function(res){
@@ -1021,7 +1105,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         }).join('');
       });
   }
-
+ 
   /* ============================================================
      ADMIN PANEL
      ============================================================ */
@@ -1043,7 +1127,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     var tabBar = tabs.map(function(t){
       return '<div class="pdp-tab'+(state.adminTab===t?' active':'')+'" data-admintab="'+t+'" style="text-transform:capitalize">'+t+'</div>';
     }).join('');
-
+ 
     var body = '';
     if(state.adminTab==='products'){
       body = '<div style="margin-bottom:14px"><input id="adminProdSearch" placeholder="Search products…" style="width:100%;max-width:340px;border:1.5px solid var(--line);border-radius:9px;padding:10px 14px;font-size:13.5px"></div>' +
@@ -1060,7 +1144,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     } else if(state.adminTab==='orders'){
       body = '<div id="adminOrdersTable"><p style="color:var(--muted)">Loading orders…</p></div>';
     }
-
+ 
     return '' +
     '<div class="pagehead"><div class="wrap"><h1>Admin Dashboard</h1><p style="color:var(--muted);font-size:13.5px;margin-top:4px">Logged in as '+escapeHtml(state.user.email)+' &middot; <a href="#" id="adminLogoutBtn" style="color:var(--amber-dark);font-weight:700">Logout</a></p></div></div>' +
     '<div class="wrap pad">' +
@@ -1068,7 +1152,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '<div id="adminBody">'+body+'</div>' +
     '</div>';
   }
-
+ 
   function adminProductRows(list){
     if(!list.length) return '<p style="color:var(--muted)">No products found.</p>';
     return list.map(function(p){
@@ -1088,12 +1172,13 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '</div>';
     }).join('');
   }
-
+ 
   /* ============================================================
      MAIN RENDER
      ============================================================ */
   function render(){
     state.route = parseHash();
+    clearInterval(heroTimer);
     var body = document.getElementById('app');
     if(!state.dataReady){
       body.innerHTML = '<div class="wrap" style="padding:120px 0;text-align:center;color:var(--muted)">Loading Vijay Electronics…</div>';
@@ -1117,10 +1202,11 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     window.scrollTo(0,0);
     updateCartBadge();
     wireEvents();
+    if(state.route.name==='home'){ initHeroCarousel(); }
     if(state.route.name==='orders' && state.user){ loadMyOrdersInto('myOrdersList'); }
     if(state.route.name==='admin' && state.isAdmin && state.adminTab==='orders'){ loadAdminOrders(); }
   }
-
+ 
   function loadAdminOrders(){
     sb.from('orders').select('*, order_items(*), payments(*)').order('created_at', {ascending:false}).limit(50)
       .then(function(res){
@@ -1145,7 +1231,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         }).join('');
       });
   }
-
+ 
   /* ============================================================
      EVENT WIRING
      ============================================================ */
@@ -1169,7 +1255,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     });
     var sortSel = document.getElementById('sortSel');
     if(sortSel){ sortSel.addEventListener('change', function(){ state.route.sort = sortSel.value; render(); }); }
-
+ 
     var pdpQty = document.getElementById('pdpQty');
     if(pdpQty){
       pdpQty.querySelectorAll('button').forEach(function(btn){
@@ -1185,7 +1271,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     var pdpBuy = document.getElementById('pdpBuy');
     if(pdpAdd){ pdpAdd.addEventListener('click', function(){ addToCart(state.route.id, parseInt(document.getElementById('pdpQty').getAttribute('data-qty'),10)); }); }
     if(pdpBuy){ pdpBuy.addEventListener('click', function(){ addToCart(state.route.id, parseInt(document.getElementById('pdpQty').getAttribute('data-qty'),10)); nav('#/checkout'); }); }
-
+ 
     document.querySelectorAll('.pdp-tab').forEach(function(t){
       t.addEventListener('click', function(){
         document.querySelectorAll('.pdp-tab').forEach(function(x){x.classList.remove('active');});
@@ -1203,7 +1289,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         }
       });
     });
-
+ 
     document.querySelectorAll('[data-cartqty]').forEach(function(box){
       var id = box.getAttribute('data-cartqty');
       box.querySelectorAll('button').forEach(function(btn){
@@ -1213,7 +1299,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     document.querySelectorAll('[data-remove]').forEach(function(el){
       el.addEventListener('click', function(){ setQty(el.getAttribute('data-remove'), 0); });
     });
-
+ 
     var applyCoupon = document.getElementById('applyCoupon');
     if(applyCoupon){
       applyCoupon.addEventListener('click', function(){
@@ -1224,7 +1310,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         });
       });
     }
-
+ 
     document.querySelectorAll('.paymethod').forEach(function(el){
       el.addEventListener('click', function(){
         document.querySelectorAll('.paymethod').forEach(function(x){x.classList.remove('active');});
@@ -1233,18 +1319,18 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         if(upiField){ upiField.style.display = el.getAttribute('data-pay')==='manual' ? 'block' : 'none'; }
       });
     });
-
+ 
     var checkoutLoginBtn = document.getElementById('checkoutLoginBtn');
     if(checkoutLoginBtn){ checkoutLoginBtn.addEventListener('click', openLoginModal); }
     var ordersLoginBtn = document.getElementById('ordersLoginBtn');
     if(ordersLoginBtn){ ordersLoginBtn.addEventListener('click', openLoginModal); }
-
+ 
     var placeOrderBtn = document.getElementById('placeOrderBtn');
     if(placeOrderBtn){ placeOrderBtn.addEventListener('click', submitOrder); }
-
+ 
     var loginBtn = document.getElementById('loginBtn');
     if(loginBtn){ loginBtn.addEventListener('click', function(){ state.user ? openAccountModal() : openLoginModal(); }); }
-
+ 
     // Admin wiring
     document.querySelectorAll('[data-admintab]').forEach(function(el){
       el.addEventListener('click', function(){ state.adminTab = el.getAttribute('data-admintab'); render(); });
@@ -1259,7 +1345,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     }
     var adminLogoutBtn = document.getElementById('adminLogoutBtn');
     if(adminLogoutBtn){ adminLogoutBtn.addEventListener('click', function(e){ e.preventDefault(); doLogout(); }); }
-
+ 
     document.querySelectorAll('[data-save-product]').forEach(function(btn){
       btn.addEventListener('click', function(){
         var id = btn.getAttribute('data-save-product');
@@ -1318,7 +1404,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       }
     }, {once:false});
   }
-
+ 
   /* ============================================================
      SEARCH
      ============================================================ */
@@ -1360,7 +1446,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       if(box && !box.contains(e.target)) box.classList.remove('open');
     });
   }
-
+ 
   /* ============================================================
      AUTH (real Supabase)
      ============================================================ */
@@ -1393,7 +1479,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       nav('#/');
     });
   }
-
+ 
   function openLoginModal(){
     var bg = document.getElementById('modalBg');
     bg.classList.add('open');
@@ -1458,7 +1544,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     bg.addEventListener('click', function(e){ if(e.target===bg) closeModal(); });
   }
   function closeModal(){ document.getElementById('modalBg').classList.remove('open'); }
-
+ 
   /* ============================================================
      ORDER SUBMISSION (real Supabase insert)
      ============================================================ */
@@ -1473,10 +1559,10 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     var agree = document.getElementById('agreeTerms');
     if(!agree.checked){ ok=false; toast('Please accept the Terms & Return Policy',''); }
     if(!ok) return;
-
+ 
     var payBtn = document.getElementById('placeOrderBtn');
     payBtn.textContent = 'Placing order…'; payBtn.disabled = true;
-
+ 
     var payType = document.querySelector('.paymethod.active').getAttribute('data-pay');
     var pay = payType==='cod' ? 'Cash on Delivery' : 'Manual / UPI Transfer';
     var paymentRef = payType==='manual' ? (document.getElementById('paymentReference').value.trim() || null) : null;
@@ -1494,7 +1580,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       subtotal: t.subtotal, discount: t.discount, delivery_charge: t.delivery, total: t.total,
       payment_method: pay, payment_reference: paymentRef
     };
-
+ 
     sb.from('orders').insert(orderRow).select().single().then(function(res){
       if(res.error){ toast('Order failed', res.error.message); payBtn.textContent='Place Order'; payBtn.disabled=false; return; }
       var order = res.data;
@@ -1521,7 +1607,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       });
     });
   }
-
+ 
   /* ============================================================
      BOOT
      ============================================================ */
@@ -1532,13 +1618,17 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       render();
       wireSearch();
     }).catch(function(){ /* error already shown */ });
-
+ 
     sb.auth.onAuthStateChange(function(){
       refreshSession().then(render);
     });
   });
 })();
-
+ 
 </script>
 </body>
 </html>
+ 
+
+
+
