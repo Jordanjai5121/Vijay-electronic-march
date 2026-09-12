@@ -389,7 +389,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
   var SUPABASE_ANON_KEY = window.__VE_SUPABASE_ANON_KEY__;
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  
-  var state = { user:null, isAdmin:false, tab:'products', products:[], groups:[], categories:[] };
+  var state = { user:null, isAdmin:false, tab:'products', products:[], groups:[], categories:[], stores:[], ordersCache:[] };
  
   function money(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
   function escapeHtml(s){
@@ -431,10 +431,12 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
   function loadBaseData(){
     return Promise.all([
       sb.from('groups').select('id,name,icon').order('sort_order'),
-      sb.from('categories').select('id,name,group_id,icon').order('sort_order')
+      sb.from('categories').select('id,name,group_id,icon').order('sort_order'),
+      sb.from('stores').select('id,name')
     ]).then(function(r){
       state.groups = r[0].data || [];
       state.categories = r[1].data || [];
+      state.stores = r[2].data || [];
     });
   }
   function loadProducts(search){
@@ -450,7 +452,10 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
  
   /* ---------------- Renderers ---------------- */
   function doRegister(email, password, fullName, mobile){
-    return sb.auth.signUp({email:email, password:password}).then(function(res){
+    return sb.auth.signUp({
+      email: email, password: password,
+      options: { data: { full_name: fullName, mobile: mobile } }
+    }).then(function(res){
       if(res.error){ toast('Registration failed', res.error.message); return; }
       var user = res.data.user;
       if(!user){ toast('Check your email to confirm, then log in.',''); return; }
@@ -526,9 +531,10 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
   }
  
   function renderShell(bodyHtml){
-    var tabs = ['products','categories','offers','orders','customers'];
+    var tabs = ['products','categories','offers','orders','customers','stocklog'];
+    var tabLabels = {products:'Products', categories:'Categories', offers:'Offers', orders:'Orders', customers:'Customers', stocklog:'Stock Log'};
     var tabBar = tabs.map(function(t){
-      return '<div class="pdp-tab'+(state.tab===t?' active':'')+'" data-tab="'+t+'" style="text-transform:capitalize">'+t+'</div>';
+      return '<div class="pdp-tab'+(state.tab===t?' active':'')+'" data-tab="'+t+'">'+tabLabels[t]+'</div>';
     }).join('');
     document.getElementById('app').innerHTML =
       '<div class="pagehead"><div class="wrap" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">' +
@@ -556,6 +562,12 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         '<div class="field" style="margin:0"><label>Stock</label><input type="number" style="width:70px" data-stock="'+p.id+'" value="'+p.stock+'"></div>' +
         '<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)"><input type="checkbox" data-active="'+p.id+'" '+(p.active?'checked':'')+'>Active</label>' +
         '<button class="btn btn-navy btn-sm" data-save="'+p.id+'">Save</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;width:100%;border-top:1px dashed var(--line);padding-top:10px;margin-top:4px">' +
+        '<span style="font-size:11.5px;color:var(--muted);font-weight:700">+ PURCHASE:</span>' +
+        '<input type="number" placeholder="Qty" data-purchase-qty="'+p.id+'" style="width:70px;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12.5px">' +
+        '<input type="text" placeholder="Note (e.g. supplier, invoice #)" data-purchase-note="'+p.id+'" style="flex:1;min-width:140px;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12.5px">' +
+        '<button class="btn btn-outline btn-sm" data-add-purchase="'+p.id+'">Add Stock</button>' +
       '</div>' +
     '</div>';
   }
@@ -716,15 +728,17 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     if(!customers.length) return '<p style="color:var(--muted)">No registered customers yet.</p>';
     return '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px">' +
       '<thead><tr style="text-align:left;border-bottom:2px solid var(--line)">' +
-        '<th style="padding:10px 8px">Customer ID</th><th style="padding:10px 8px">Name</th><th style="padding:10px 8px">Email</th><th style="padding:10px 8px">Mobile</th><th style="padding:10px 8px">Joined</th><th style="padding:10px 8px">Orders</th><th style="padding:10px 8px">Total Spend</th><th style="padding:10px 8px"></th>' +
+        '<th style="padding:10px 8px">Customer ID</th><th style="padding:10px 8px">Name</th><th style="padding:10px 8px">Email</th><th style="padding:10px 8px">Mobile</th><th style="padding:10px 8px">Last Delivery Address</th><th style="padding:10px 8px">Preferred Store</th><th style="padding:10px 8px">Joined</th><th style="padding:10px 8px">Orders</th><th style="padding:10px 8px">Total Spend</th><th style="padding:10px 8px"></th>' +
       '</tr></thead><tbody>' +
       customers.map(function(c){
-        var stat = orderStats[c.id] || {count:0,total:0};
+        var stat = orderStats[c.id] || {count:0,total:0,address:null,storeName:null};
         return '<tr style="border-bottom:1px solid var(--line)" data-customer-row="'+c.id+'">' +
           '<td style="padding:10px 8px;font-weight:700">'+escapeHtml(c.customer_id||'')+'</td>' +
           '<td style="padding:10px 8px"><input type="text" data-c-name value="'+escapeHtml(c.full_name||'')+'" placeholder="(not set)" style="width:130px;border:1px solid var(--line);border-radius:6px;padding:5px 7px"></td>' +
           '<td style="padding:10px 8px">'+escapeHtml(c.email||'')+'</td>' +
           '<td style="padding:10px 8px"><input type="text" data-c-mobile value="'+escapeHtml(c.mobile||'')+'" placeholder="(not set)" style="width:110px;border:1px solid var(--line);border-radius:6px;padding:5px 7px"></td>' +
+          '<td style="padding:10px 8px;max-width:220px">'+(stat.address ? escapeHtml(stat.address) : '<span style="color:var(--muted)">No orders yet</span>')+'</td>' +
+          '<td style="padding:10px 8px">'+(stat.storeName ? escapeHtml(stat.storeName) : '—')+'</td>' +
           '<td style="padding:10px 8px">'+new Date(c.created_at).toLocaleDateString('en-IN')+'</td>' +
           '<td style="padding:10px 8px">'+stat.count+'</td>' +
           '<td style="padding:10px 8px">'+money(stat.total)+'</td>' +
@@ -739,20 +753,25 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     var statuses = ['Order Placed','Confirmed','Processing','Packed','Shipped','Delivered','Cancelled'];
     return orders.map(function(o){
       var pay = (o.payments && o.payments[0]) || null;
+      var storeName = (state.stores.find(function(s){return s.id===o.store_id;})||{}).name || '—';
       return '<div class="formcard" style="margin-bottom:16px">' +
         '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px">' +
           '<div>' +
             '<div style="font-weight:800;color:var(--navy)">'+o.order_number+'</div>' +
             '<div style="color:var(--muted);font-size:12.5px">'+new Date(o.created_at).toLocaleString('en-IN')+'</div>' +
           '</div>' +
-          '<select data-order-status="'+o.id+'" style="border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;font-weight:700;height:fit-content">' +
-            statuses.map(function(s){return '<option value="'+s+'"'+(s===o.status?' selected':'')+'>'+s+'</option>';}).join('') +
-          '</select>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+            '<select data-order-status="'+o.id+'" style="border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;font-weight:700;height:fit-content">' +
+              statuses.map(function(s){return '<option value="'+s+'"'+(s===o.status?' selected':'')+'>'+s+'</option>';}).join('') +
+            '</select>' +
+            '<button class="btn btn-outline btn-sm" data-print-label="'+o.id+'" style="height:fit-content">🖨 Print Label</button>' +
+          '</div>' +
         '</div>' +
         '<div class="formgrid" style="margin-bottom:14px">' +
           '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Customer</div><div style="font-weight:600">'+escapeHtml(o.customer_name)+'</div></div>' +
           '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Mobile</div><div style="font-weight:600"><a href="tel:'+o.mobile+'">'+o.mobile+'</a></div></div>' +
           '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Email</div><div style="font-weight:600">'+escapeHtml(o.email||'—')+'</div></div>' +
+          '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Pickup Store</div><div style="font-weight:700;color:var(--amber-dark)">'+escapeHtml(storeName)+'</div></div>' +
           '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Payment</div><div style="font-weight:600">'+escapeHtml(o.payment_method)+(o.payment_reference?' ('+escapeHtml(o.payment_reference)+')':'')+(pay?' · '+pay.status:'')+'</div></div>' +
           '<div class="full"><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Delivery Address</div><div style="font-weight:600">'+escapeHtml(o.address)+', '+escapeHtml(o.district)+', '+escapeHtml(o.state)+' – '+escapeHtml(o.pincode)+', '+escapeHtml(o.country)+'</div></div>' +
         '</div>' +
@@ -786,37 +805,119 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     } else if(state.tab==='orders'){
       tabBody.innerHTML = '<p style="color:var(--muted)">Loading orders…</p>';
       sb.from('orders').select('*, order_items(*), payments(*)').order('created_at', {ascending:false}).limit(80).then(function(r){
-        tabBody.innerHTML = renderOrdersTab(r.data||[]);
+        state.ordersCache = r.data || [];
+        tabBody.innerHTML = renderOrdersTab(state.ordersCache);
         wireOrderEvents();
       });
     } else if(state.tab==='customers'){
       tabBody.innerHTML = '<p style="color:var(--muted)">Loading customers…</p>';
       Promise.all([
         sb.from('profiles').select('*').order('created_at', {ascending:false}),
-        sb.from('orders').select('profile_id,total')
+        sb.from('orders').select('profile_id,total,address,district,state,pincode,store_id,created_at').order('created_at', {ascending:true})
       ]).then(function(r){
         var customers = r[0].data || [];
         var orders = r[1].data || [];
         var stats = {};
         orders.forEach(function(o){
-          if(!stats[o.profile_id]) stats[o.profile_id] = {count:0,total:0};
+          if(!stats[o.profile_id]) stats[o.profile_id] = {count:0,total:0,address:null,storeName:null};
           stats[o.profile_id].count++;
           stats[o.profile_id].total += Number(o.total);
+          // orders fetched oldest→newest, so the last one we see per customer is their most recent
+          stats[o.profile_id].address = o.address + ', ' + o.district + ', ' + o.state + ' – ' + o.pincode;
+          stats[o.profile_id].storeName = (state.stores.find(function(s){return s.id===o.store_id;})||{}).name || null;
         });
         tabBody.innerHTML = renderCustomersTab(customers, stats);
         wireCustomerEvents();
       });
+    } else if(state.tab==='stocklog'){
+      tabBody.innerHTML = '<p style="color:var(--muted)">Loading stock log…</p>';
+      sb.from('stock_movements').select('*, products(name, sku)').order('created_at', {ascending:false}).limit(150)
+        .then(function(r){
+          tabBody.innerHTML = renderStockLogTab(r.data || []);
+        });
     }
+  }
+ 
+  function renderStockLogTab(rows){
+    if(!rows.length) return '<p style="color:var(--muted)">No stock movements recorded yet.</p>';
+    var typeColor = {purchase:'var(--emerald-dark)', sale:'#c0392b', adjustment:'var(--amber-dark)'};
+    var typeLabel = {purchase:'+ Purchase', sale:'− Sale', adjustment:'Adjustment'};
+    return '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px">' +
+      '<thead><tr style="text-align:left;border-bottom:2px solid var(--line)">' +
+        '<th style="padding:10px 8px">Date</th><th style="padding:10px 8px">Product</th><th style="padding:10px 8px">Type</th><th style="padding:10px 8px">Qty</th><th style="padding:10px 8px">Stock After</th><th style="padding:10px 8px">Note</th>' +
+      '</tr></thead><tbody>' +
+      rows.map(function(m){
+        var p = m.products || {};
+        return '<tr style="border-bottom:1px solid var(--line)">' +
+          '<td style="padding:9px 8px;color:var(--muted);white-space:nowrap">'+new Date(m.created_at).toLocaleString('en-IN')+'</td>' +
+          '<td style="padding:9px 8px">'+escapeHtml(p.name||'—')+'<div style="color:var(--muted);font-size:11.5px">'+(p.sku||'')+'</div></td>' +
+          '<td style="padding:9px 8px;font-weight:700;color:'+(typeColor[m.movement_type]||'var(--ink)')+'">'+(typeLabel[m.movement_type]||m.movement_type)+'</td>' +
+          '<td style="padding:9px 8px;font-weight:700">'+(m.quantity>0?'+':'')+m.quantity+'</td>' +
+          '<td style="padding:9px 8px">'+m.stock_after+'</td>' +
+          '<td style="padding:9px 8px;color:var(--muted)">'+escapeHtml(m.note||'—')+'</td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table></div>' +
+      '<p style="color:var(--muted);font-size:12px;margin-top:10px">Showing the most recent 150 movements.</p>';
   }
  
   function wireOrderEvents(){
     document.querySelectorAll('[data-order-status]').forEach(function(sel){
       sel.addEventListener('change', function(){
-        sb.from('orders').update({status:sel.value}).eq('id', sel.getAttribute('data-order-status')).then(function(res){
+        sb.rpc('admin_update_order_status', {p_order_id: parseInt(sel.getAttribute('data-order-status'),10), p_new_status: sel.value}).then(function(res){
           toast(res.error ? 'Update failed' : 'Order status updated', res.error ? res.error.message : '');
         });
       });
     });
+    document.querySelectorAll('[data-print-label]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-print-label');
+        var order = state.ordersCache.find(function(o){ return String(o.id) === String(id); });
+        if(order) printOrderLabel(order);
+      });
+    });
+  }
+ 
+  function printOrderLabel(o){
+    var storeName = (state.stores.find(function(s){return s.id===o.store_id;})||{}).name || '—';
+    var itemsHtml = (o.order_items||[]).map(function(it){
+      return '<tr><td>'+escapeHtml(it.product_name)+' <span style="color:#666">('+it.sku+')</span></td><td style="text-align:center">'+it.quantity+'</td></tr>';
+    }).join('');
+    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Label — '+o.order_number+'</title>' +
+      '<style>' +
+        'body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:22px;color:#111;}' +
+        '.label{border:3px solid #111;border-radius:10px;padding:22px;max-width:420px;}' +
+        '.brand{font-weight:900;font-size:18px;letter-spacing:.3px;}' +
+        '.brand span{color:#e8871e;}' +
+        '.store-badge{display:inline-block;background:#111;color:#fff;font-weight:700;font-size:13px;padding:5px 12px;border-radius:6px;margin:10px 0 6px;}' +
+        '.seq{font-size:30px;font-weight:900;letter-spacing:1px;margin:6px 0 14px;border-bottom:3px dashed #111;padding-bottom:12px;}' +
+        '.row{font-size:14px;margin:6px 0;}' +
+        '.row b{display:inline-block;min-width:88px;color:#555;font-weight:700;font-size:11px;text-transform:uppercase;vertical-align:top;}' +
+        'table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px;}' +
+        'th{text-align:left;font-size:11px;text-transform:uppercase;color:#555;border-bottom:2px solid #111;padding-bottom:4px;}' +
+        'td{padding:6px 0;border-bottom:1px solid #ddd;}' +
+        '.total{font-size:17px;font-weight:900;text-align:right;margin-top:10px;}' +
+        '@media print{ body{padding:0;} .label{border:2px solid #111;} }' +
+      '</style></head><body>' +
+      '<div class="label">' +
+        '<div class="brand">VIJAY <span>ELECTRONICS</span></div>' +
+        '<div class="store-badge">DISPATCH FROM: '+escapeHtml(storeName).toUpperCase()+'</div>' +
+        '<div class="seq">#'+o.order_number+'</div>' +
+        '<div class="row"><b>Date</b> '+new Date(o.created_at).toLocaleString('en-IN')+'</div>' +
+        '<div class="row"><b>Customer</b> '+escapeHtml(o.customer_name)+'</div>' +
+        '<div class="row"><b>Mobile</b> '+escapeHtml(o.mobile)+'</div>' +
+        '<div class="row"><b>Address</b> '+escapeHtml(o.address)+', '+escapeHtml(o.district)+', '+escapeHtml(o.state)+' – '+escapeHtml(o.pincode)+', '+escapeHtml(o.country)+'</div>' +
+        '<div class="row"><b>Payment</b> '+escapeHtml(o.payment_method)+(o.payment_reference?' ('+escapeHtml(o.payment_reference)+')':'')+'</div>' +
+        '<table><thead><tr><th>Item</th><th style="text-align:center">Qty</th></tr></thead><tbody>'+itemsHtml+'</tbody></table>' +
+        '<div class="total">Total: ₹'+Number(o.total).toLocaleString('en-IN')+'</div>' +
+      '</div>' +
+      '<script>window.onload=function(){ window.print(); };<\/script>' +
+      '</body></html>';
+    var w = window.open('', '_blank', 'width=480,height=720');
+    if(!w){ toast('Popup blocked','Please allow popups to print labels'); return; }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
   }
  
   function wireCustomerEvents(){
@@ -877,10 +978,34 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         var id = btn.getAttribute('data-save');
         var price = parseFloat(document.querySelector('[data-price="'+id+'"]').value);
         var mrp = parseFloat(document.querySelector('[data-mrp="'+id+'"]').value);
-        var stock = parseInt(document.querySelector('[data-stock="'+id+'"]').value,10);
+        var newStock = parseInt(document.querySelector('[data-stock="'+id+'"]').value,10);
         var active = document.querySelector('[data-active="'+id+'"]').checked;
-        sb.from('products').update({price:price,mrp:mrp,stock:stock,active:active}).eq('id',id).then(function(res){
-          toast(res.error ? 'Save failed' : 'Product updated', res.error ? res.error.message : '');
+        var original = state.products.find(function(p){return String(p.id)===String(id);});
+        var jobs = [ sb.from('products').update({price:price,mrp:mrp,active:active}).eq('id',id) ];
+        if(original && newStock !== original.stock){
+          jobs.push(sb.rpc('admin_set_stock', {p_product_id: parseInt(id,10), p_new_stock: newStock, p_note: 'Manual correction via admin panel'}));
+        }
+        Promise.all(jobs).then(function(results){
+          var err = results.find(function(r){return r.error;});
+          toast(err ? 'Save failed' : 'Product updated', err ? err.error.message : '');
+          if(original) original.stock = newStock;
+        });
+      });
+    });
+    document.querySelectorAll('[data-add-purchase]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-add-purchase');
+        var qty = parseInt(document.querySelector('[data-purchase-qty="'+id+'"]').value, 10);
+        var note = document.querySelector('[data-purchase-note="'+id+'"]').value.trim();
+        if(!qty || qty <= 0){ toast('Enter a quantity to add', ''); return; }
+        sb.rpc('admin_add_purchase_stock', {p_product_id: parseInt(id,10), p_quantity: qty, p_note: note || null}).then(function(res){
+          if(res.error){ toast('Add stock failed', res.error.message); return; }
+          toast('Stock added', '+'+qty+' units');
+          document.querySelector('[data-stock="'+id+'"]').value = res.data.stock;
+          var original = state.products.find(function(p){return String(p.id)===String(id);});
+          if(original) original.stock = res.data.stock;
+          document.querySelector('[data-purchase-qty="'+id+'"]').value = '';
+          document.querySelector('[data-purchase-note="'+id+'"]').value = '';
         });
       });
     });
@@ -1026,4 +1151,3 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 </script>
 </body>
 </html>
- 
