@@ -403,7 +403,8 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     profile: null,    // row from public.profiles
     isAdmin: false,
     dataReady: false,
-    adminTab: 'products'
+    adminTab: 'products',
+    appliedCoupon: null
   };
  
   function money(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
@@ -524,11 +525,27 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       state.user = session ? session.user : null;
       if(!state.user){ state.profile = null; state.isAdmin = false; return; }
       return sb.from('profiles').select('*').eq('id', state.user.id).maybeSingle().then(function(pRes){
-        if(pRes.data){ state.profile = pRes.data; }
-        else {
+        var meta = state.user.user_metadata || {};
+        if(pRes.data){
+          state.profile = pRes.data;
+          // Self-healing: if the profile is missing name/mobile but the auth
+          // account actually has it saved (from signup metadata), backfill it —
+          // covers accounts created before this fix, on every future login.
+          var patch = {};
+          if(!pRes.data.full_name && meta.full_name) patch.full_name = meta.full_name;
+          if(!pRes.data.mobile && meta.mobile) patch.mobile = meta.mobile;
+          if(Object.keys(patch).length){
+            return sb.from('profiles').update(patch).eq('id', state.user.id).select().single().then(function(fixed){
+              state.profile = fixed.data || pRes.data;
+            });
+          }
+        } else {
           // First login after email confirmation — the signup-time insert couldn't
           // run without a session, so create the profile now instead.
-          return sb.from('profiles').insert({id: state.user.id, email: state.user.email}).select().single().then(function(created){
+          return sb.from('profiles').insert({
+            id: state.user.id, email: state.user.email,
+            full_name: meta.full_name || null, mobile: meta.mobile || null
+          }).select().single().then(function(created){
             state.profile = created.data || null;
           });
         }
@@ -576,8 +593,14 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     var mrpTotal = lines.reduce(function(s,l){return s + l.p.mrp*l.qty;},0);
     var discount = mrpTotal - subtotal;
     var delivery = subtotal>0 && subtotal<1500 ? 99 : 0;
-    var total = subtotal + delivery;
-    return {subtotal:subtotal, discount:discount, delivery:delivery, total:total, lines:lines};
+    var couponDiscount = 0;
+    if(state.appliedCoupon){
+      var c = state.appliedCoupon;
+      couponDiscount = c.type==='percent' ? Math.round(subtotal * c.value / 100) : c.value;
+      couponDiscount = Math.min(couponDiscount, subtotal);
+    }
+    var total = Math.max(subtotal + delivery - couponDiscount, 0);
+    return {subtotal:subtotal, discount:discount, delivery:delivery, couponDiscount:couponDiscount, total:total, lines:lines};
   }
   function addToCart(id, qty){
     qty = qty || 1;
@@ -1000,7 +1023,8 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         '<div class="summary-row"><span>Subtotal</span><span>'+money(t.subtotal)+'</span></div>' +
         '<div class="summary-row"><span>Discount</span><span>-'+money(t.discount)+'</span></div>' +
         '<div class="summary-row"><span>Delivery</span><span>'+(t.delivery? money(t.delivery) : 'Free')+'</span></div>' +
-        '<div class="couponrow"><input placeholder="Enter coupon code" id="couponInput"><button class="btn btn-outline btn-sm" id="applyCoupon">Apply</button></div>' +
+        '<div class="couponrow"><input placeholder="Enter coupon code" id="couponInput" value="'+(state.appliedCoupon?state.appliedCoupon.code:'')+'"><button class="btn btn-outline btn-sm" id="applyCoupon">Apply</button></div>' +
+        (t.couponDiscount>0 ? '<div class="summary-row"><span>Coupon ('+escapeHtml(state.appliedCoupon.code)+')</span><span>-'+money(t.couponDiscount)+'</span></div>' : '') +
         '<div class="summary-row total"><span>Total</span><span>'+money(t.total)+'</span></div>' +
         '<button class="btn btn-amber btn-block" style="margin-top:16px" data-nav="#/checkout">Proceed to Checkout</button>' +
       '</div>' +
@@ -1018,6 +1042,9 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     var prefillName = state.profile ? state.profile.full_name : '';
     var prefillMobile = state.profile ? state.profile.mobile : '';
     var prefillEmail = state.profile ? state.profile.email : (state.user.email||'');
+    var storeOptions = STORES.map(function(s,i){
+      return '<div class="paymethod'+(i===0?' active':'')+'" data-store="'+s.id+'">'+s.name+(s.ho?' (HO)':'')+'</div>';
+    }).join('');
     return '' +
     '<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="#/">Home</a> / <a href="#/cart">Cart</a> / Checkout</div><h1>Checkout</h1></div></div>' +
     '<div class="wrap checkout-layout">' +
@@ -1034,8 +1061,11 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
             field('state','State *','text') +
             field('country','Country *','text','','India') +
           '</div>' +
+          '<h3 style="margin-top:26px">Order From Which Store? *</h3>' +
+          '<p style="color:var(--muted);font-size:12.5px;margin-bottom:10px">Your order will be prepared and billed from this branch.</p>' +
+          '<div class="paymethods" id="storePicker">'+storeOptions+'</div>' +
           '<h3 style="margin-top:26px">Payment Method</h3>' +
-          '<div class="paymethods">' +
+          '<div class="paymethods" id="paymethodPicker">' +
             '<div class="paymethod active" data-pay="cod">Cash on Delivery</div>' +
             '<div class="paymethod" data-pay="manual">Manual / UPI Transfer</div>' +
           '</div>' +
@@ -1051,6 +1081,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         (t.lines.map(function(l){return '<div class="summary-row"><span>'+escapeHtml(l.p.name)+' × '+l.qty+'</span><span>'+money(l.p.price*l.qty)+'</span></div>';}).join('')) +
         '<div class="summary-row"><span>Subtotal</span><span>'+money(t.subtotal)+'</span></div>' +
         '<div class="summary-row"><span>Delivery</span><span>'+(t.delivery? money(t.delivery):'Free')+'</span></div>' +
+        (t.couponDiscount>0 ? '<div class="summary-row"><span>Coupon ('+escapeHtml(state.appliedCoupon.code)+')</span><span>-'+money(t.couponDiscount)+'</span></div>' : '') +
         '<div class="summary-row total"><span>Total</span><span>'+money(t.total)+'</span></div>' +
         '<button class="btn btn-amber btn-block" style="margin-top:16px" id="placeOrderBtn">Place Order</button>' +
       '</div>' +
@@ -1063,12 +1094,13 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
   function renderSuccess(){
     var o = state.lastOrder;
     if(!o) return '<div class="wrap"><div class="empty"><h3>No recent order</h3><a class="btn btn-navy" href="#/">Back to Home</a></div></div>';
+    var storeName = (STORES.find(function(s){return s.id===o.store;})||{}).name || '';
     return '<div class="ordersuccess">' +
       '<div class="tick">✓</div>' +
       '<h1>Order Placed Successfully</h1>' +
       '<p style="color:var(--muted);margin-top:10px">Thank you, '+escapeHtml(o.name)+'. We\'ll confirm your order on WhatsApp/SMS shortly.</p>' +
       '<div class="oid">'+o.id+'</div>' +
-      '<p style="color:var(--muted);font-size:13.5px">Total paid: '+money(o.total)+' &middot; Payment: '+o.pay+'</p>' +
+      '<p style="color:var(--muted);font-size:13.5px">Total paid: '+money(o.total)+' &middot; Payment: '+o.pay+(storeName?' &middot; Pickup: '+storeName:'')+'</p>' +
       '<a class="btn btn-navy" href="#/orders" style="margin-top:20px">View My Orders</a>' +
     '</div>';
   }
@@ -1089,9 +1121,10 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
         var orders = res.data || [];
         if(!orders.length){ el.innerHTML = '<div class="empty"><h3>No orders yet</h3><a class="btn btn-navy" href="#/">Start Shopping</a></div>'; return; }
         el.innerHTML = orders.map(function(o){
+          var storeName = (STORES.find(function(s){return s.id===o.store_id;})||{}).name || '';
           return '<div class="summary-card" style="margin-bottom:16px;position:static">' +
             '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">' +
-              '<div><strong>'+o.order_number+'</strong><div style="color:var(--muted);font-size:12.5px">'+new Date(o.created_at).toLocaleDateString('en-IN')+'</div></div>' +
+              '<div><strong>'+o.order_number+'</strong><div style="color:var(--muted);font-size:12.5px">'+new Date(o.created_at).toLocaleDateString('en-IN')+(storeName?' · Pickup: '+storeName:'')+'</div></div>' +
               '<span class="offer-tag" style="background:var(--navy)">'+o.status+'</span>' +
             '</div>' +
             (o.order_items||[]).map(function(it){
@@ -1302,18 +1335,34 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       applyCoupon.addEventListener('click', function(){
         var code = document.getElementById('couponInput').value.trim();
         if(!code){ toast('Enter a coupon code first',''); return; }
-        sb.from('coupons').select('*').ilike('code', code).eq('active', true).maybeSingle().then(function(res){
-          toast(res.data ? 'Coupon applied' : 'Coupon not valid', '');
+        var t = cartTotals();
+        sb.rpc('validate_coupon', {p_code: code, p_order_amount: t.subtotal}).then(function(res){
+          if(res.error){ toast('Could not validate coupon', res.error.message); return; }
+          var row = res.data && res.data[0];
+          if(row && row.valid){
+            state.appliedCoupon = {code: code, type: row.discount_type, value: Number(row.discount_value)};
+            toast('Coupon applied', row.message);
+          } else {
+            state.appliedCoupon = null;
+            toast('Coupon not valid', row ? row.message : '');
+          }
+          render();
         });
       });
     }
  
-    document.querySelectorAll('.paymethod').forEach(function(el){
+    document.querySelectorAll('.paymethod[data-pay]').forEach(function(el){
       el.addEventListener('click', function(){
-        document.querySelectorAll('.paymethod').forEach(function(x){x.classList.remove('active');});
+        document.querySelectorAll('.paymethod[data-pay]').forEach(function(x){x.classList.remove('active');});
         el.classList.add('active');
         var upiField = document.getElementById('upiRefField');
         if(upiField){ upiField.style.display = el.getAttribute('data-pay')==='manual' ? 'block' : 'none'; }
+      });
+    });
+    document.querySelectorAll('.paymethod[data-store]').forEach(function(el){
+      el.addEventListener('click', function(){
+        document.querySelectorAll('.paymethod[data-store]').forEach(function(x){x.classList.remove('active');});
+        el.classList.add('active');
       });
     });
  
@@ -1454,7 +1503,10 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     });
   }
   function doRegister(email, password, fullName, mobile){
-    return sb.auth.signUp({email:email, password:password}).then(function(res){
+    return sb.auth.signUp({
+      email: email, password: password,
+      options: { data: { full_name: fullName, mobile: mobile } } // saved on the auth user immediately, even before email confirmation
+    }).then(function(res){
       if(res.error){ toast('Registration failed', res.error.message); return; }
       var user = res.data.user;
       if(!user){ toast('Check your email to confirm your account, then log in.',''); closeModal(); return; }
@@ -1543,7 +1595,9 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
   function closeModal(){ document.getElementById('modalBg').classList.remove('open'); }
  
   /* ============================================================
-     ORDER SUBMISSION (real Supabase insert)
+     ORDER SUBMISSION — via secure place_order() RPC
+     The server (not the browser) validates stock and computes the
+     final price, discount, delivery and total.
      ============================================================ */
   function submitOrder(){
     var ids = ['fullName','mobile','email','address','pincode','district','state','country'];
@@ -1560,48 +1614,41 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     var payBtn = document.getElementById('placeOrderBtn');
     payBtn.textContent = 'Placing order…'; payBtn.disabled = true;
  
-    var payType = document.querySelector('.paymethod.active').getAttribute('data-pay');
+    var payType = document.querySelector('#paymethodPicker .paymethod.active').getAttribute('data-pay');
     var pay = payType==='cod' ? 'Cash on Delivery' : 'Manual / UPI Transfer';
     var paymentRef = payType==='manual' ? (document.getElementById('paymentReference').value.trim() || null) : null;
+    var storeEl = document.querySelector('#storePicker .paymethod.active');
+    var storeId = storeEl ? storeEl.getAttribute('data-store') : null;
+    if(!storeId){ toast('Please select a store',''); payBtn.textContent='Place Order'; payBtn.disabled=false; return; }
     var t = cartTotals();
-    var orderRow = {
-      profile_id: state.user.id,
-      customer_name: document.getElementById('fullName').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      mobile: document.getElementById('mobile').value.trim(),
-      address: document.getElementById('address').value.trim(),
-      pincode: document.getElementById('pincode').value.trim(),
-      district: document.getElementById('district').value.trim(),
-      state: document.getElementById('state').value.trim(),
-      country: document.getElementById('country').value.trim(),
-      subtotal: t.subtotal, discount: t.discount, delivery_charge: t.delivery, total: t.total,
-      payment_method: pay, payment_reference: paymentRef
-    };
+    var items = t.lines.map(function(l){ return {product_id: l.p.id, quantity: l.qty}; });
  
-    sb.from('orders').insert(orderRow).select().single().then(function(res){
-      if(res.error){ toast('Order failed', res.error.message); payBtn.textContent='Place Order'; payBtn.disabled=false; return; }
+    sb.rpc('place_order', {
+      p_items: items,
+      p_customer_name: document.getElementById('fullName').value.trim(),
+      p_email: document.getElementById('email').value.trim(),
+      p_mobile: document.getElementById('mobile').value.trim(),
+      p_address: document.getElementById('address').value.trim(),
+      p_pincode: document.getElementById('pincode').value.trim(),
+      p_district: document.getElementById('district').value.trim(),
+      p_state: document.getElementById('state').value.trim(),
+      p_country: document.getElementById('country').value.trim(),
+      p_payment_method: pay,
+      p_store_id: storeId,
+      p_payment_reference: paymentRef,
+      p_coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null
+    }).then(function(res){
+      if(res.error){
+        toast('Order failed', res.error.message);
+        payBtn.textContent='Place Order'; payBtn.disabled=false;
+        return;
+      }
       var order = res.data;
-      var itemRows = t.lines.map(function(l){
-        return { order_id: order.id, product_id: l.p.id, product_name: l.p.name, sku: l.p.sku, price: l.p.price, quantity: l.qty, line_total: l.p.price*l.qty };
-      });
-      var paymentRow = {
-        order_id: order.id,
-        gateway: payType==='cod' ? 'cod' : 'manual',
-        gateway_payment_id: paymentRef,
-        amount: t.total,
-        status: payType==='cod' ? 'pending' : 'pending'
-      };
-      return Promise.all([
-        sb.from('order_items').insert(itemRows),
-        sb.from('payments').insert(paymentRow)
-      ]).then(function(results){
-        if(results[0].error) console.error(results[0].error);
-        if(results[1].error) console.error(results[1].error);
-        state.lastOrder = {id: order.order_number, name: order.customer_name, total: order.total, pay: order.payment_method};
-        state.cart = {};
-        updateCartBadge();
-        nav('#/success');
-      });
+      state.lastOrder = {id: order.order_number, name: order.customer_name, total: order.total, pay: order.payment_method, store: storeId};
+      state.cart = {};
+      state.appliedCoupon = null;
+      updateCartBadge();
+      nav('#/success');
     });
   }
  
@@ -1626,6 +1673,7 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 </body>
 </html>
  
+
 
 
 
