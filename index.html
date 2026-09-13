@@ -124,21 +124,15 @@ header.site{background:#fff;border-bottom:1px solid var(--line);position:sticky;
 .trust-t{font-weight:700;font-size:14.5px;color:#fff;}
 .trust-d{font-size:12.5px;color:#aebada;margin-top:2px;}
  
-/* ---------- Hero carousel (flowing shop photos + offers) ---------- */
+/* ---------- Hero carousel (flowing shop photos + offers — image only) ---------- */
 .hero-carousel{position:relative;overflow:hidden;background:var(--navy);color:#fff;}
 .hero-track{display:flex;transition:transform .9s cubic-bezier(.65,0,.35,1);}
-.hero-slide{min-width:100%;position:relative;display:flex;align-items:center;min-height:440px;padding:64px 24px;}
+.hero-slide{min-width:100%;height:440px;position:relative;cursor:pointer;}
 .hero-slide-bg{position:absolute;inset:0;z-index:0;background:linear-gradient(150deg,var(--navy) 0%,var(--navy-3) 100%);}
 .hero-slide-bg .photo-slot,.hero-slide-bg img{width:100%;height:100%;object-fit:cover;}
-.hero-slide-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,30,59,.92) 0%,rgba(14,30,59,.55) 55%,rgba(14,30,59,.25) 100%);}
 .hero-slide-bg .photo-fallback{background:transparent;}
-.hero-slide-body{position:relative;z-index:1;max-width:640px;margin:0 auto;width:100%;padding:0 24px;animation:heroFade .7s ease both;}
-@keyframes heroFade{from{opacity:0;transform:translateY(16px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
-.hero-slide-body h1{font-size:42px;line-height:1.12;color:#fff;}
-.hero-slide-body h1 em{font-style:normal;color:var(--amber);}
-.hero-slide-body p.lead{color:#c9d3e8;font-size:16px;max-width:480px;margin-top:16px;}
 .hero-dots{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2;}
-.hero-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;transition:.2s;}
+.hero-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.55);cursor:pointer;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
 .hero-dot.active{background:var(--amber);width:22px;border-radius:5px;}
 .trust-strip{background:#fff;border-bottom:1px solid var(--line);}
 .trust-strip .wrap{display:flex;justify-content:center;gap:36px;padding:14px 24px;flex-wrap:wrap;font-size:13px;font-weight:600;color:var(--muted);}
@@ -350,7 +344,7 @@ select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px
 @media (max-width:980px){
   .hero .wrap{grid-template-columns:1fr;padding:40px 20px 56px;}
   .hero h1{font-size:34px;}
-  .hero-slide{min-height:380px;padding:44px 20px;}
+  .hero-slide{height:260px;}
   .hero-slide-body h1{font-size:28px;}
   .trust-strip .wrap{gap:16px;font-size:12px;}
   .stores-grid{grid-template-columns:1fr;}
@@ -788,14 +782,9 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
   }
  
   function heroSlideHtml(s){
-    return '<div class="hero-slide">' +
+    var plainTitle = String(s.title).replace(/<[^>]+>/g,'');
+    return '<div class="hero-slide" data-nav="'+s.cta.hash+'" title="'+escapeHtml(plainTitle)+'">' +
       '<div class="hero-slide-bg">'+photoSlot(s.img, ICONS.box)+'</div>' +
-      '<div class="hero-slide-body">' +
-        '<div class="hero-eyebrow">'+s.eyebrow+'</div>' +
-        '<h1>'+s.title+'</h1>' +
-        '<p class="lead">'+s.sub+'</p>' +
-        '<div class="ctas"><button class="btn btn-amber" data-nav="'+s.cta.hash+'">'+s.cta.label+'</button></div>' +
-      '</div>' +
     '</div>';
   }
  
@@ -1673,7 +1662,3 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 </body>
 </html>
  
-
-
-
-
