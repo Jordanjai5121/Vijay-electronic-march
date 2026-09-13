@@ -266,7 +266,11 @@ select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px
 .pdp-gallery-main .photo-slot{position:absolute;inset:0;}
 .pdp-gallery-main .initials{font-size:64px;font-weight:800;opacity:.3;font-family:'Sora',sans-serif;}
 .pdp-thumbs{display:flex;gap:10px;margin-top:14px;}
-.pdp-thumb{width:64px;height:64px;border-radius:10px;background:#eef1f8;border:2px solid var(--line);}
+.pdp-thumbs{display:flex;gap:10px;margin-top:14px;}
+.pdp-thumb-slot{width:64px;height:64px;border-radius:10px;overflow:hidden;background:#eef1f8;border:2px solid var(--line);cursor:pointer;flex-shrink:0;transition:border-color .15s;}
+.pdp-thumb-slot:hover{border-color:var(--amber);}
+.pdp-thumb-slot.active{border-color:var(--amber);box-shadow:0 0 0 2px rgba(232,135,30,.25);}
+.summary-thumb{width:32px;height:32px;border-radius:6px;overflow:hidden;flex-shrink:0;display:inline-block;vertical-align:middle;background:#eef1f8;}
 .pdp-cat{color:var(--amber-dark);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em;}
 .pdp h1{font-size:28px;margin:8px 0 10px;}
 .pdp-sku{color:var(--muted);font-size:13px;margin-bottom:18px;}
@@ -925,13 +929,20 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     if(!p) return '<div class="empty"><h3>Product not found</h3><p>It may have been removed.</p><a class="btn btn-navy" href="#/">Back to Home</a></div>';
     var disc = discPct(p);
     var related = PRODUCTS.filter(function(x){return x.category===p.category && x.id!==p.id;}).slice(0,4);
+    var galleryFiles = [p.sku+'.jpg', p.sku+'-2.jpg', p.sku+'-3.jpg', p.sku+'-4.jpg'];
+    var thumbs = galleryFiles.map(function(f,i){
+      return '<div class="pdp-thumb-slot'+(i===0?' active':'')+'" data-gallery-idx="'+i+'">' +
+        photoSlot(storageUrl('products', f), iconFor(p.category)) +
+      '</div>';
+    }).join('');
     return '' +
     '<div class="pagehead"><div class="wrap">' +
       '<div class="crumbs"><a href="#/">Home</a> / <a href="#/group/'+p.group+'">'+escapeHtml(p.category)+'</a> / '+escapeHtml(p.name)+'</div>' +
     '</div></div>' +
     '<div class="wrap pdp">' +
       '<div>' +
-        '<div class="pdp-gallery-main">'+photoSlot(storageUrl('products', p.sku+'.jpg'), iconFor(p.category), 'pdp-photo')+'</div>' +
+        '<div class="pdp-gallery-main" id="pdpMainImg">'+photoSlot(storageUrl('products', p.sku+'.jpg'), iconFor(p.category), 'pdp-photo')+'</div>' +
+        '<div class="pdp-thumbs" id="pdpThumbs" data-sku="'+p.sku+'">'+thumbs+'</div>' +
       '</div>' +
       '<div>' +
         '<div class="pdp-cat">'+escapeHtml(p.category)+' &middot; '+escapeHtml(p.brand)+'</div>' +
@@ -1062,7 +1073,15 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
       '</form>' +
       '<div class="summary-card">' +
         '<h3 style="font-size:16px;margin-bottom:14px">Order Summary</h3>' +
-        (t.lines.map(function(l){return '<div class="summary-row"><span>'+escapeHtml(l.p.name)+' × '+l.qty+'</span><span>'+money(l.p.price*l.qty)+'</span></div>';}).join('')) +
+        (t.lines.map(function(l){
+          return '<div class="summary-row" style="align-items:center">' +
+            '<span style="display:flex;align-items:center;gap:8px;min-width:0">' +
+              '<span class="summary-thumb">'+photoSlot(storageUrl('products', l.p.sku+'.jpg'), iconFor(l.p.category))+'</span>' +
+              '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(l.p.name)+' × '+l.qty+'</span>' +
+            '</span>' +
+            '<span style="white-space:nowrap">'+money(l.p.price*l.qty)+'</span>' +
+          '</div>';
+        }).join('')) +
         '<div class="summary-row"><span>Subtotal</span><span>'+money(t.subtotal)+'</span></div>' +
         '<div class="summary-row"><span>Delivery</span><span>'+(t.delivery? money(t.delivery):'Free')+'</span></div>' +
         (t.couponDiscount>0 ? '<div class="summary-row"><span>Coupon ('+escapeHtml(state.appliedCoupon.code)+')</span><span>-'+money(t.couponDiscount)+'</span></div>' : '') +
@@ -1285,6 +1304,40 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     var pdpBuy = document.getElementById('pdpBuy');
     if(pdpAdd){ pdpAdd.addEventListener('click', function(){ addToCart(state.route.id, parseInt(document.getElementById('pdpQty').getAttribute('data-qty'),10)); }); }
     if(pdpBuy){ pdpBuy.addEventListener('click', function(){ addToCart(state.route.id, parseInt(document.getElementById('pdpQty').getAttribute('data-qty'),10)); nav('#/checkout'); }); }
+ 
+    // Product gallery: thumbnail click + swipe on the main image
+    var pdpThumbsBox = document.getElementById('pdpThumbs');
+    if(pdpThumbsBox){
+      var gallerySku = pdpThumbsBox.getAttribute('data-sku');
+      var galleryFiles = [gallerySku+'.jpg', gallerySku+'-2.jpg', gallerySku+'-3.jpg', gallerySku+'-4.jpg'];
+      function showGalleryImage(idx){
+        idx = (idx + galleryFiles.length) % galleryFiles.length;
+        var mainBox = document.getElementById('pdpMainImg');
+        var img = mainBox.querySelector('img');
+        var fallback = mainBox.querySelector('.photo-fallback');
+        img.style.display = 'block';
+        img.src = storageUrl('products', galleryFiles[idx]);
+        fallback.style.display = 'none';
+        pdpThumbsBox.querySelectorAll('.pdp-thumb-slot').forEach(function(t,i){
+          t.classList.toggle('active', i===idx);
+        });
+        mainBox.setAttribute('data-idx', idx);
+      }
+      pdpThumbsBox.querySelectorAll('[data-gallery-idx]').forEach(function(t){
+        t.addEventListener('click', function(){ showGalleryImage(parseInt(t.getAttribute('data-gallery-idx'),10)); });
+      });
+      var mainBoxEl = document.getElementById('pdpMainImg');
+      var touchStartX = null;
+      mainBoxEl.addEventListener('touchstart', function(e){ touchStartX = e.changedTouches[0].clientX; }, {passive:true});
+      mainBoxEl.addEventListener('touchend', function(e){
+        if(touchStartX===null) return;
+        var dx = e.changedTouches[0].clientX - touchStartX;
+        var curIdx = parseInt(mainBoxEl.getAttribute('data-idx')||'0',10);
+        if(dx > 40) showGalleryImage(curIdx-1);
+        else if(dx < -40) showGalleryImage(curIdx+1);
+        touchStartX = null;
+      }, {passive:true});
+    }
  
     document.querySelectorAll('.pdp-tab').forEach(function(t){
       t.addEventListener('click', function(){
@@ -1656,4 +1709,4 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 </script>
 </body>
 </html>
-
+ 
