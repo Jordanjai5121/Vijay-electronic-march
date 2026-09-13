@@ -54,7 +54,7 @@ img{max-width:100%;display:block;}
 
 /* ---------- Topbar ---------- */
 .topbar{background:var(--navy);color:#c9d3e8;font-size:13px;}
-.topbar .wrap{display:flex;justify-content:space-between;align-items:center;height:36px;gap:16px;flex-wrap:wrap;}
+.topbar .wrap{display:flex;justify-content:center;align-items:center;height:36px;gap:16px;flex-wrap:wrap;}
 .topbar a{color:#c9d3e8;}
 .topbar .badge{color:#ffcf9a;display:flex;align-items:center;gap:6px;}
 .topbar .left{display:flex;gap:22px;}
@@ -266,7 +266,11 @@ select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px
 .pdp-gallery-main .photo-slot{position:absolute;inset:0;}
 .pdp-gallery-main .initials{font-size:64px;font-weight:800;opacity:.3;font-family:'Sora',sans-serif;}
 .pdp-thumbs{display:flex;gap:10px;margin-top:14px;}
-.pdp-thumb{width:64px;height:64px;border-radius:10px;background:#eef1f8;border:2px solid var(--line);}
+.pdp-thumbs{display:flex;gap:10px;margin-top:14px;}
+.pdp-thumb-slot{width:64px;height:64px;border-radius:10px;overflow:hidden;background:#eef1f8;border:2px solid var(--line);cursor:pointer;flex-shrink:0;transition:border-color .15s;}
+.pdp-thumb-slot:hover{border-color:var(--amber);}
+.pdp-thumb-slot.active{border-color:var(--amber);box-shadow:0 0 0 2px rgba(232,135,30,.25);}
+.summary-thumb{width:32px;height:32px;border-radius:6px;overflow:hidden;flex-shrink:0;display:inline-block;vertical-align:middle;background:#eef1f8;}
 .pdp-cat{color:var(--amber-dark);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em;}
 .pdp h1{font-size:28px;margin:8px 0 10px;}
 .pdp-sku{color:var(--muted);font-size:13px;margin-bottom:18px;}
@@ -359,11 +363,10 @@ select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px
   .formgrid{grid-template-columns:1fr;}
   .desk-only{display:none;}
   .mobile-only{display:flex;}
-  .headerbar{height:64px;gap:14px;}
+  .headerbar{height:auto;min-height:64px;padding:10px 0;gap:14px;flex-wrap:wrap;}
   .logo .mark{font-size:18px;}
   .logo .tag{display:none;}
-  .searchbox{order:3;flex-basis:100%;max-width:none;margin:0 0 12px;}
-  .headerbar{flex-wrap:wrap;}
+  .searchbox{order:3;flex-basis:100%;max-width:none;margin:2px 0 4px;}
 }
 
 </style>
@@ -568,13 +571,20 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
   }
 
   function productRow(p){
+    var galleryUploads = [1,2,3,4].map(function(i){
+      var fname = i===1 ? p.sku+'.jpg' : p.sku+'-'+i+'.jpg';
+      return '<div style="display:inline-flex;align-items:center;gap:4px;margin-right:10px">' +
+        '<span style="font-size:10.5px;color:var(--muted)">Photo '+i+'</span>' +
+        '<input type="file" accept="image/*" data-prod-upload="'+fname+'" style="font-size:11px;max-width:110px">' +
+        '<a href="#" data-remove-photo="products|'+fname+'" style="font-size:10.5px;color:#c0392b;font-weight:600">✕</a>' +
+      '</div>';
+    }).join('');
     return '<div class="cart-item" style="flex-wrap:wrap">' +
       '<div class="photo-slot cart-photo"><img src="'+storageUrl('products', p.sku+'.jpg')+'" onerror="this.style.display=\'none\'"></div>' +
       '<div class="cart-info" style="min-width:180px">' +
         '<div class="n">'+escapeHtml(p.name)+'</div>' +
         '<div class="c">'+p.sku+' &middot; '+escapeHtml(p.category)+'</div>' +
-        '<input type="file" accept="image/*" data-prod-upload="'+p.sku+'" style="margin-top:6px;font-size:11.5px">' +
-        '<a href="#" data-remove-photo="products|'+p.sku+'.jpg" style="font-size:11px;color:#c0392b;font-weight:600;margin-left:8px">Remove</a>' +
+        '<div style="margin-top:6px">'+galleryUploads+'</div>' +
       '</div>' +
       '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
         '<div class="field" style="margin:0"><label>Price</label><input type="number" style="width:90px" data-price="'+p.id+'" value="'+p.price+'"></div>' +
@@ -1039,15 +1049,26 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     });
     document.querySelectorAll('[data-prod-upload]').forEach(function(input){
       input.addEventListener('change', function(){
-        var sku = input.getAttribute('data-prod-upload');
+        var filename = input.getAttribute('data-prod-upload'); // already the full filename, e.g. VE-TELE-1234-2.jpg
         var file = input.files[0];
         if(!file) return;
-        sb.storage.from('products').upload(sku+'.jpg', file, {upsert:true}).then(function(res){
+        sb.storage.from('products').upload(filename, file, {upsert:true}).then(function(res){
           if(res.error){ toast('Upload failed', res.error.message); return; }
-          toast('Photo uploaded', sku);
+          toast('Photo uploaded', filename);
+          var needle = '/products/'+filename;
+          document.querySelectorAll('img').forEach(function(img){
+            if(img.getAttribute('src') && img.getAttribute('src').indexOf(needle) > -1){
+              img.style.display='block';
+              img.src = storageUrl('products', filename) + '?t=' + Date.now();
+            }
+          });
+          // The main product-row thumbnail always mirrors Photo 1
           var row = input.closest('.cart-item');
-          var img = row ? row.querySelector('.photo-slot img') : null;
-          if(img){ img.style.display='block'; img.src = storageUrl('products', sku+'.jpg') + '?t=' + Date.now(); }
+          var mainImg = row ? row.querySelector('.photo-slot.cart-photo img') : null;
+          if(mainImg && filename === filename.replace(/-2\.jpg|-3\.jpg|-4\.jpg/,'')){
+            mainImg.style.display='block';
+            mainImg.src = storageUrl('products', filename) + '?t=' + Date.now();
+          }
         });
       });
     });
