@@ -54,7 +54,7 @@ img{max-width:100%;display:block;}
  
 /* ---------- Topbar ---------- */
 .topbar{background:var(--navy);color:#c9d3e8;font-size:13px;}
-.topbar .wrap{display:flex;justify-content:space-between;align-items:center;height:36px;gap:16px;flex-wrap:wrap;}
+.topbar .wrap{display:flex;justify-content:center;align-items:center;height:36px;gap:16px;flex-wrap:wrap;}
 .topbar a{color:#c9d3e8;}
 .topbar .badge{color:#ffcf9a;display:flex;align-items:center;gap:6px;}
 .topbar .left{display:flex;gap:22px;}
@@ -359,11 +359,10 @@ select.sortsel{border:1.5px solid var(--line);border-radius:9px;padding:9px 14px
   .formgrid{grid-template-columns:1fr;}
   .desk-only{display:none;}
   .mobile-only{display:flex;}
-  .headerbar{height:64px;gap:14px;}
+  .headerbar{height:auto;min-height:64px;padding:10px 0;gap:14px;flex-wrap:wrap;}
   .logo .mark{font-size:18px;}
   .logo .tag{display:none;}
-  .searchbox{order:3;flex-basis:100%;max-width:none;margin:0 0 12px;}
-  .headerbar{flex-wrap:wrap;}
+  .searchbox{order:3;flex-basis:100%;max-width:none;margin:2px 0 4px;}
 }
  
 </style>
@@ -663,10 +662,6 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
     }
     return '' +
     '<div class="topbar"><div class="wrap">' +
-      '<div class="left desk-only">' +
-        '<span>📞 Trichy: 70109 46746</span>' +
-        '<span>📍 3 stores: Trichy · Madurai · Othakadai</span>' +
-      '</div>' +
       '<div class="badge">🛡️ Genuine Products · Brand Warranty</div>' +
     '</div></div>' +
     '<header class="site"><div class="wrap headerbar">' +
@@ -1661,4 +1656,4 @@ window.__VE_SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 </script>
 </body>
 </html>
- 
+
